@@ -1,0 +1,53 @@
+{
+    "files": [
+        "**",
+        ".*/**"
+    ],
+    "enableFiletypes": [
+        "pip-requirements",
+        "shellscript",
+        "tlaplus_cfg", // file type detected wrong, I'm just trying to match *.cfg
+        "toml"
+    ],
+    "ignorePaths": [
+        ".git",
+        "*.ambr",
+        "*.log",
+        "*.(bmp|png|jpg|jpeg|gif|svg|ico|icns|tiff|tif|xbm|webp|pdf|ps|eps|psd|xcf)",
+        "**/typings/**/*",
+        "__pycache__",
+        "**/*.egg-info/**/*"
+    ],
+    "words": [
+        "addaction",
+        "addoption",
+        "ambr",
+        "assertrepr",
+        "autouse",
+        "beforerun",
+        "centralwidget",
+        "destinationlabel",
+        "elts",
+        "icns",
+        "keepends",
+        "layoutdefault",
+        "Nemo",
+        "Odhner",
+        "pycache",
+        "pyfunc",
+        "pyqt",
+        "pytest",
+        "pytestconfig",
+        "qtdesigner",
+        "reprcompare",
+        "setuptools",
+        "Sobel",
+        "sourcelabel",
+        "Thunar",
+        "tlaplus",
+        "venv",
+        "vibing",
+        "webp",
+        "zhoufeng"
+    ]
+}

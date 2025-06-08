@@ -1,0 +1,46 @@
+{
+    // Code style
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "[markdown]": {
+        // Markdown uses two trailing spaces for line breaks.
+        "files.trimTrailingWhitespace": false
+    },
+    // This is needed to make auto-import work (the Quick Fix for missing imports, and the auto-import on completion if enabled.)
+    "python.analysis.packageIndexDepths": [
+        {
+            "name": "PyQt6",
+            "depth": 5
+        },
+        {
+            "name": "cv2",
+            "depth": 5
+        },
+    ],
+    // Pytest integration
+    "python.testing.pytestEnabled": true,
+    // Hide files from the sidebar
+    "files.exclude": {
+        "**/*.egg-info": true,
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true, // I'm using Pyright, but might as well exclude this too.
+    },
+    // Prevent accidental editing of generated files and installed packages.
+    // (You can always use File: Set Active Editor Writeable in Session if you need to.)
+    "files.readonlyInclude": {
+        "**/build/**": true,
+        "**/dist/**": true,
+        "**/.venv/**": true,
+        "**/venv/**": true,
+        "**/.env/**": true,
+        "**/env/**": true,
+        "**/ENV/**": true,
+    },
+    // CSpell is mainly configured in cspell.json, but the VS Code extension is inconsistent with the CLI.
+    "cSpell.checkOnlyEnabledFileTypes": false
+}
