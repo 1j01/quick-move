@@ -5,9 +5,9 @@ import signal
 import sys
 
 from PyQt6 import uic
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QStringListModel, Qt
 from PyQt6.QtGui import QAction, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QMainWindow,
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListView, QMainWindow,
                              QPushButton)
 
 from quick_move import __version__
@@ -35,6 +35,8 @@ class MainWindow(QMainWindow):
         uic.loadUi(UI_FILE, self)  # pyright: ignore[reportUnknownMemberType, reportPrivateImportUsage]
 
         self.payloadLabel: QLabel
+        self.destinationEdit: QLineEdit
+        self.suggestionsListView: QListView  # NOTE: There's also QCompleter which could be used for suggestions
         self.moveButton: QPushButton
 
         self.actionQuit: QAction
@@ -52,6 +54,9 @@ class MainWindow(QMainWindow):
 
         # Populate info about selected files
         self.payloadLabel.setText(f"Moving {len(payload)} files: {', '.join(payload)}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
+
+        # Handle destination directory input
+        self.destinationEdit.textChanged.connect(self.update_suggestions)
 
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
     # Also the event type is Optional. I don't know why yet.
@@ -72,6 +77,16 @@ class MainWindow(QMainWindow):
         # TODO: Implement file moving logic
         QMessageBox.information(self, "Move Files", "This feature is not implemented yet.")
 
+    def update_suggestions(self):
+        """Update the suggestions list based on the destination directory input."""
+        destination = self.destinationEdit.text()
+        if not destination:
+            self.suggestionsListView.setModel(None)
+            return
+        # TODO: Implement suggestions based on the destination directory
+        suggestions = [f"{destination}/suggestion_{i}" for i in range(5)]  # Dummy suggestions
+        model = QStringListModel(suggestions)
+        self.suggestionsListView.setModel(model)
 
     def show_about(self):
         """Show the about dialog."""

@@ -25,7 +25,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QLineEdit" name="folderPathEdit">
+       <widget class="QLineEdit" name="destinationEdit">
         <property name="placeholderText">
          <string>Destination...</string>
         </property>
