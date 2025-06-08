@@ -16,122 +16,32 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QPushButton" name="importButton">
+     <widget class="QLabel" name="payloadLabel">
       <property name="text">
-       <string>Import Documents</string>
+       <string>Moving (some number of) items to:</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="thresholdGroupBox">
-      <property name="title">
-       <string>Auto-Segmentation</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QLabel" name="autoJoinSizeLabel">
-         <property name="text">
-          <string>Auto-Join (ignore gaps smaller than a given size)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="autoJoinSizeSlider">
-         <property name="minimum">
-          <number>0</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="singleStep">
-          <number>1</number>
-         </property>
-         <property name="pageStep">
-          <number>10</number>
-         </property>
-         <property name="value">
-          <number>10</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="threshold2Label">
-         <property name="text">
-          <string>Max Foreground Brightness</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="threshold2Slider">
-         <property name="maximum">
-          <number>255</number>
-         </property>
-         <property name="value">
-          <number>200</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="threshold1Label">
-         <property name="text">
-          <string>Min Background Brightness</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="threshold1Slider">
-         <property name="maximum">
-          <number>255</number>
-         </property>
-         <property name="value">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="apertureSizeLabel">
-         <property name="text">
-          <string>Sobel aperture size</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="apertureSizeSlider">
-         <property name="minimum">
-          <number>3</number>
-         </property>
-         <property name="maximum">
-          <number>7</number>
-         </property>
-         <property name="singleStep">
-          <number>2</number>
-         </property>
-         <property name="pageStep">
-          <number>2</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLineEdit" name="folderPathEdit">
+        <property name="placeholderText">
+         <string>Destination...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="moveButton">
+        <property name="text">
+         <string>Move</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="exportButton">
-      <property name="text">
-       <string>Export Doodles</string>
-      </property>
-     </widget>
+     <widget class="QListView" name="suggestionsListView"/>
     </item>
    </layout>
   </widget>
@@ -148,8 +58,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -160,15 +68,7 @@
     <addaction name="actionAbout_Quick_Move"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-    <addaction name="actionZoom_In"/>
-    <addaction name="actionZoom_Out"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuView"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
