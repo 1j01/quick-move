@@ -45,6 +45,7 @@
         "setuptools",
         "Sobel",
         "sourcelabel",
+        "syncthing",
         "Thunar",
         "tlaplus",
         "venv",

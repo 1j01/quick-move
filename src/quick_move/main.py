@@ -1,13 +1,14 @@
 """Main module for the Quick Move application."""
 
+from os import path
 import os.path
 import signal
 import sys
 
 from PyQt6 import uic
 from PyQt6.QtCore import QStringListModel, Qt
-from PyQt6.QtGui import QAction, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListView, QMainWindow,
+from PyQt6.QtGui import QAction, QFileSystemModel, QKeyEvent
+from PyQt6.QtWidgets import (QApplication, QCompleter, QDialog, QLabel, QLineEdit, QListView, QMainWindow,
                              QPushButton)
 
 from quick_move import __version__
@@ -19,6 +20,12 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 UI_FILE = os.path.join(os.path.dirname(__file__), "main_window.ui")
 
 ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
+
+# I want to move files to ~/Sync (syncthing default folder), mainly, for now.
+# TODO: persistent destination scope config that you can change easily, perhaps with the Home key (using the same destination input field)
+destination_scope = os.path.expanduser('~/Sync/')
+if not os.path.exists(destination_scope):
+    destination_scope = os.path.expanduser('~/')
 
 # Get payload from command line arguments
 payload = sys.argv[1:] if len(sys.argv) > 1 else []
@@ -83,6 +90,16 @@ class MainWindow(QMainWindow):
 
         # Handle destination directory input
         self.destinationEdit.textChanged.connect(self.update_suggestions)
+        self.destinationEdit.setText(destination_scope)
+
+        # model = QFileSystemModel()
+        # model.setRootPath(destination_scope)
+        # model.setRootPath("/")
+        # self.suggestionsListView.setModel(model)
+        model = ["foo", "bar", "baz"]  # Placeholder for suggestions
+        completer = QCompleter(model, self)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.destinationEdit.setCompleter(completer)
 
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
     # Also the event type is Optional. I don't know why yet.
@@ -122,14 +139,6 @@ class MainWindow(QMainWindow):
 
     def update_suggestions(self):
         """Update the suggestions list based on the destination directory input."""
-        destination = self.destinationEdit.text()
-        if not destination:
-            self.suggestionsListView.setModel(None)
-            return
-        # TODO: Implement suggestions based on the destination directory
-        suggestions = [f"{destination}/suggestion_{i}" for i in range(5)]  # Dummy suggestions
-        model = QStringListModel(suggestions)
-        self.suggestionsListView.setModel(model)
 
     def show_about(self):
         """Show the about dialog."""
