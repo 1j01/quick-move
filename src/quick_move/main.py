@@ -22,6 +22,25 @@ ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
 
 # Get payload from command line arguments
 payload = sys.argv[1:] if len(sys.argv) > 1 else []
+# Get selection with desktop automation
+if not payload:
+    # import keyboard
+    import pyperclip
+    original_clipboard = pyperclip.paste()
+    # keyboard.send('ctrl+x')
+    # Instead of keyboard, use xdotool to avoid needing root permissions
+    os.system('xdotool key ctrl+x')
+    # Does pyperclip.paste() wait for the clipboard to change at all, or is it dumb?
+    new_clipboard = pyperclip.paste()
+    pyperclip.copy(original_clipboard)
+    # More robust might be to set the clipboard to empty, then ctrl+x, then wait for the clipboard to change,
+    # with some timeout.
+    # Currently, if you run the program after copying/cutting the selection, it will be identical to the original clipboard,
+    # and the payload will be considered empty.
+    if new_clipboard == original_clipboard:
+        payload = []
+    else:
+        payload = new_clipboard.splitlines()
 
 class MainWindow(QMainWindow):
     def __init__(self):

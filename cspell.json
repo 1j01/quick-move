@@ -35,6 +35,7 @@
         "Odhner",
         "pycache",
         "pyfunc",
+        "pyperclip",
         "pyqt",
         "pytest",
         "pytestconfig",
