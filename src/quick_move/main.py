@@ -99,9 +99,26 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).keyPressEvent(event)
 
     def move_files(self):
-        """Move selected files to the target directory."""
-        # TODO: Implement file moving logic
-        QMessageBox.information(self, "Move Files", "This feature is not implemented yet.")
+        """Move selected files to the target directory, and exit if successful."""
+        import shutil
+        destination = self.destinationEdit.text().strip()
+        if not destination:
+            QMessageBox.warning(self, "Warning", "Please specify a destination directory.")
+            return
+        if not os.path.exists(destination):
+            QMessageBox.warning(self, "Warning", f"The destination '{destination}' does not exist.")
+            return
+        if not os.path.isdir(destination):
+            QMessageBox.warning(self, "Warning", f"The destination '{destination}' is not a directory.")
+            return
+        # TODO: Can we do this atomically?
+        for file in payload:
+            try:
+                shutil.move(file, destination)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to move '{file}' to '{destination}': {e}")
+
+        self.close()
 
     def update_suggestions(self):
         """Update the suggestions list based on the destination directory input."""
