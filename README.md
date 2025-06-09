@@ -4,12 +4,21 @@ Quickly move files by typing where you want them to go.
 
 The fastest workflow for reorganizing thousands of files.
 
-- [ ] Move files to a folder by typing its name
+- [x] Move files to a folder by typing its name
+  - technically works... but need to improve matching/autocomplete for this tool to be useful
 - [ ] Fuzzy folder name completion
 - [ ] Create folders on the fly
 - [ ] AI suggestions for where to move files
+  - [ ] Looks at destination folder (configured scope) structure as well as a history of recent moves
+  - [ ] Looks at file names and contents
 - [ ] Works with any file manager via a global hotkey
-- [ ] File manager integration (e.g. Nautilus, Nemo, Thunar, Dolphin, etc.) for a window-local hotkey
+  - [x] Experimental desktop automation with a flag `quick-move --from-clipboard` which triggers <kbd>Ctrl+X</kbd> and reads the clipboard to get the selected files
+- [x] File manager integration (e.g. Nautilus, Nemo, Thunar, Dolphin, etc.) for a window-local hotkey
+  - [x] Tested with Thunar, should work with others, as long as you can set a custom action to run `quick-move` with the selected files as arguments
+- [x] Limit destination suggestions to a specific folder
+  - currently hard-coded to the home directory, or if present `~/Sync` (default Syncthing folder)
+- [ ] Undo recent moves from a list
+  - [ ] A way to clear the history
 
 ## Bugs and Issues
 
