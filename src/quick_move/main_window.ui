@@ -97,28 +97,6 @@
     <enum>QAction::AboutQtRole</enum>
    </property>
   </action>
-  <action name="actionOpen">
-   <property name="text">
-    <string>&amp;Open</string>
-   </property>
-   <property name="statusTip">
-    <string>Import images, such as scans of sketches.</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionSave">
-   <property name="text">
-    <string>&amp;Save</string>
-   </property>
-   <property name="statusTip">
-    <string>Export images for each defined region.</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-  </action>
   <action name="actionQuit">
    <property name="text">
     <string>&amp;Quit</string>
@@ -131,28 +109,6 @@
    </property>
    <property name="menuRole">
     <enum>QAction::QuitRole</enum>
-   </property>
-  </action>
-  <action name="actionZoom_In">
-   <property name="text">
-    <string>Zoom &amp;In</string>
-   </property>
-   <property name="statusTip">
-    <string>Enlarge the view.</string>
-   </property>
-   <property name="shortcut">
-    <string>+</string>
-   </property>
-  </action>
-  <action name="actionZoom_Out">
-   <property name="text">
-    <string>Zoom &amp;Out</string>
-   </property>
-   <property name="statusTip">
-    <string>Reduce the view.</string>
-   </property>
-   <property name="shortcut">
-    <string>-</string>
    </property>
   </action>
  </widget>
