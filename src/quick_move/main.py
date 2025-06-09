@@ -29,7 +29,8 @@ if not payload:
     original_clipboard = pyperclip.paste()
     # keyboard.send('ctrl+x')
     # Instead of keyboard, use xdotool to avoid needing root permissions
-    os.system('xdotool key --clearmodifiers ctrl+x')
+    import subprocess
+    subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+x'], check=True)
     # Does pyperclip.paste() wait for the clipboard to change at all, or is it dumb?
     new_clipboard = pyperclip.paste()
     pyperclip.copy(original_clipboard)
@@ -38,8 +39,14 @@ if not payload:
     # Currently, if you run the program after copying/cutting the selection, it will be identical to the original clipboard,
     # and the payload will be considered empty.
     if new_clipboard == original_clipboard:
+        print("new_clipboard is the same as original_clipboard, assuming no selection was made.")
+        print(f"original_clipboard: {original_clipboard}")
         payload = []
     else:
+        print("new_clipboard is different from original_clipboard, assuming selection was made.")
+        print(f"new_clipboard: {new_clipboard}")
+        print(f"original_clipboard: {original_clipboard}")
+        # TODO: split on spaces, handle quoting
         payload = new_clipboard.splitlines()
 
 class MainWindow(QMainWindow):
