@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (QApplication, QCompleter, QDialog, QLabel, QLineEdi
 from quick_move import __version__
 from PyQt6.QtWidgets import QMessageBox
 
-from quick_move.completer import get_completions
+from quick_move.completer import CompletionItemDelegate, RichTextItemDelegate, get_completions
 
 # Allow Ctrl+C to exit the application. Qt doesn't handle interrupts by default.
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -100,6 +100,9 @@ class MainWindow(QMainWindow):
         self.model = QStringListModel([])
         completer = QCompleter(self.model, self)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        # completer.setPopup(self.suggestionsListView)
+        # self.suggestionsListView.setItemDelegate(CompletionItemDelegate())
+        completer.popup().setItemDelegate(RichTextItemDelegate())
         self.destinationEdit.setCompleter(completer)
 
         self.destinationEdit.textChanged.connect(self.update_suggestions)
