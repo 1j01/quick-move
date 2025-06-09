@@ -1,20 +1,19 @@
 """Main module for the Quick Move application."""
 
-from os import path
 import os.path
 import signal
 import sys
 
 from PyQt6 import uic
-from PyQt6.QtCore import QStringListModel, Qt
-from PyQt6.QtGui import QAction, QFileSystemModel, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QCompleter, QDialog, QLabel, QLineEdit, QListView, QListWidget, QMainWindow,
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QKeyEvent
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QMainWindow,
                              QPushButton)
 
 from quick_move import __version__
 from PyQt6.QtWidgets import QMessageBox
 
-from quick_move.completer import CompletionItemDelegate, RichTextItemDelegate, get_completions
+from quick_move.completer import get_completions
 
 # Allow Ctrl+C to exit the application. Qt doesn't handle interrupts by default.
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -80,18 +79,18 @@ class MainWindow(QMainWindow):
 
         # Handle button clicks
         # (could do this with an action, for consistency...)
-        self.moveButton.clicked.connect(self.move_files)
+        self.moveButton.clicked.connect(self.move_files)  # pyright: ignore[reportUnknownMemberType]
 
         # Handle menu actions
-        self.actionQuit.triggered.connect(self.close) # type: ignore
-        self.actionAbout_Quick_Move.triggered.connect(self.show_about)
-        self.actionAbout_Qt.triggered.connect(QApplication.aboutQt)
+        self.actionQuit.triggered.connect(self.close)  # pyright: ignore[reportUnknownMemberType]
+        self.actionAbout_Quick_Move.triggered.connect(self.show_about)  # pyright: ignore[reportUnknownMemberType]
+        self.actionAbout_Qt.triggered.connect(QApplication.aboutQt)  # pyright: ignore[reportUnknownMemberType]
 
         # Populate info about selected files
         self.payloadLabel.setText(f"Moving {len(payload)} files: {', '.join(payload)}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
 
         # Handle destination directory input
-        self.destinationEdit.textChanged.connect(self.update_suggestions)
+        self.destinationEdit.textChanged.connect(self.update_suggestions)  # pyright: ignore[reportUnknownMemberType]
         self.destinationEdit.setText(destination_scope)
 
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
