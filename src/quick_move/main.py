@@ -23,7 +23,7 @@ ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
 # Get payload from command line arguments
 payload = sys.argv[1:] if len(sys.argv) > 1 else []
 # Get selection with desktop automation
-if not payload:
+if payload and payload[0] == '--from-clipboard':
     # import keyboard
     import pyperclip
     original_clipboard = pyperclip.paste()
