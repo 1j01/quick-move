@@ -76,15 +76,13 @@ class MainWindow(QMainWindow):
         self.actionQuit: QAction
         self.actionAbout_Quick_Move: QAction
         self.actionAbout_Qt: QAction
+        self.actionMove: QAction
 
-        # Handle button clicks
-        # (could do this with an action, for consistency...)
-        self.moveButton.clicked.connect(self.move_files)  # pyright: ignore[reportUnknownMemberType]
-
-        # Handle menu actions
+        # Handle actions
         self.actionQuit.triggered.connect(self.close)  # pyright: ignore[reportUnknownMemberType]
         self.actionAbout_Quick_Move.triggered.connect(self.show_about)  # pyright: ignore[reportUnknownMemberType]
         self.actionAbout_Qt.triggered.connect(QApplication.aboutQt)  # pyright: ignore[reportUnknownMemberType]
+        self.actionMove.triggered.connect(self.move_files)  # pyright: ignore[reportUnknownMemberType]
 
         # Populate info about selected files
         self.payloadLabel.setText(f"Moving {len(payload)} files: {', '.join(payload)}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
