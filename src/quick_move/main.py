@@ -8,7 +8,7 @@ import sys
 from PyQt6 import uic
 from PyQt6.QtCore import QStringListModel, Qt
 from PyQt6.QtGui import QAction, QFileSystemModel, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QCompleter, QDialog, QLabel, QLineEdit, QListView, QMainWindow,
+from PyQt6.QtWidgets import (QApplication, QCompleter, QDialog, QLabel, QLineEdit, QListView, QListWidget, QMainWindow,
                              QPushButton)
 
 from quick_move import __version__
@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
 
         self.payloadLabel: QLabel
         self.destinationEdit: QLineEdit
-        self.suggestionsListView: QListView  # NOTE: There's also QCompleter which could be used for suggestions
+        self.suggestionsListWidget: QListWidget
         self.moveButton: QPushButton
 
         self.actionQuit: QAction
@@ -91,20 +91,6 @@ class MainWindow(QMainWindow):
         self.payloadLabel.setText(f"Moving {len(payload)} files: {', '.join(payload)}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
 
         # Handle destination directory input
-
-        # model = QFileSystemModel()
-        # model.setRootPath(destination_scope)
-        # model.setRootPath("/")
-        # self.suggestionsListView.setModel(model)
-        # model = ["foo", "bar", "baz"]  # Placeholder for suggestions
-        self.model = QStringListModel([])
-        completer = QCompleter(self.model, self)
-        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        # completer.setPopup(self.suggestionsListView)
-        # self.suggestionsListView.setItemDelegate(CompletionItemDelegate())
-        completer.popup().setItemDelegate(RichTextItemDelegate())
-        self.destinationEdit.setCompleter(completer)
-
         self.destinationEdit.textChanged.connect(self.update_suggestions)
         self.destinationEdit.setText(destination_scope)
 
@@ -116,9 +102,20 @@ class MainWindow(QMainWindow):
         if key == Qt.Key.Key_Escape:
             self.close()
         elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
+            item = self.suggestionsListWidget.currentItem()
+            if item is not None:
+                self.destinationEdit.setText(item.text())
             self.move_files()
         elif key == Qt.Key.Key_F1:
             self.show_about()
+        elif key == Qt.Key.Key_Up:
+            self.suggestionsListWidget.setCurrentRow(max(0, self.suggestionsListWidget.currentRow() - 1))
+        elif key == Qt.Key.Key_Down:
+            self.suggestionsListWidget.setCurrentRow(min(self.suggestionsListWidget.count() - 1, self.suggestionsListWidget.currentRow() + 1))
+        # elif key == Qt.Key.Key_Tab:
+        #     item = self.suggestionsListWidget.currentItem()
+        #     if item is not None:
+        #         self.destinationEdit.setText(item.text())
 
         super(MainWindow, self).keyPressEvent(event)
 
@@ -148,7 +145,10 @@ class MainWindow(QMainWindow):
         """Update the suggestions list based on the destination directory input."""
         suggestions = get_completions(self.destinationEdit.text(), destination_scope)
         # TODO: icons/styling for directories to be created, AI suggestions
-        self.model.setStringList([suggestion.display_text for suggestion in suggestions])
+        # self.model.setStringList([suggestion.display_text for suggestion in suggestions])
+        self.suggestionsListWidget.clear()
+        self.suggestionsListWidget.addItems([suggestion.display_text for suggestion in suggestions])
+        self.suggestionsListWidget.setCurrentRow(0)
 
     def show_about(self):
         """Show the about dialog."""
