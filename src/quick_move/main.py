@@ -89,17 +89,19 @@ class MainWindow(QMainWindow):
         self.payloadLabel.setText(f"Moving {len(payload)} files: {', '.join(payload)}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
 
         # Handle destination directory input
-        self.destinationEdit.textChanged.connect(self.update_suggestions)
-        self.destinationEdit.setText(destination_scope)
 
         # model = QFileSystemModel()
         # model.setRootPath(destination_scope)
         # model.setRootPath("/")
         # self.suggestionsListView.setModel(model)
-        model = ["foo", "bar", "baz"]  # Placeholder for suggestions
-        completer = QCompleter(model, self)
+        # model = ["foo", "bar", "baz"]  # Placeholder for suggestions
+        self.model = QStringListModel([])
+        completer = QCompleter(self.model, self)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.destinationEdit.setCompleter(completer)
+
+        self.destinationEdit.textChanged.connect(self.update_suggestions)
+        self.destinationEdit.setText(destination_scope)
 
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
     # Also the event type is Optional. I don't know why yet.
@@ -139,6 +141,33 @@ class MainWindow(QMainWindow):
 
     def update_suggestions(self):
         """Update the suggestions list based on the destination directory input."""
+        # TODO: move to separate file
+        # TODO: handle relative vs absolute paths (QCompleter only does a prefix match)
+        # TODO: fuzzy matching
+        # TODO: probably loop to find the deepest existing directory instead of only checking the parent
+        destination = self.destinationEdit.text().strip()
+        # if not destination:
+        #     self.model.setStringList([])
+        #     return
+
+        # Normalize the path
+        destination = os.path.expanduser(destination)
+        if not os.path.isabs(destination):
+            destination = os.path.join(destination_scope, destination)
+        destination = os.path.normpath(destination)
+
+        # If the path is a directory, list its contents
+        if os.path.isdir(destination):
+            suggestions = sorted(os.listdir(destination))
+        else:
+            # If the path is not a directory, suggest the parent directory's contents
+            parent_dir = os.path.dirname(destination)
+            if os.path.isdir(parent_dir):
+                suggestions = sorted(os.listdir(parent_dir))
+            else:
+                suggestions = []
+
+        self.model.setStringList(suggestions)
 
     def show_about(self):
         """Show the about dialog."""
