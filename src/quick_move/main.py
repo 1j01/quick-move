@@ -135,7 +135,10 @@ class MainWindow(QMainWindow):
         if item is not None:
             label = self.suggestionsListWidget.itemWidget(item)
             if label is not None:
-                self.destinationEdit.setText(label.text())  # type: ignore
+                # Use tooltip() instead of text() to avoid HTML in the input field
+                # Could alternatively store a custom property on the label with the full path.
+                # Do we want a tooltip? Maybe, so I've done it this way.
+                self.destinationEdit.setText(label.toolTip())
 
     def move_files(self):
         """Move selected files to the target directory, and exit if successful."""
@@ -181,6 +184,7 @@ class MainWindow(QMainWindow):
             label = QLabel()
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setText(html)
+            label.setToolTip(text)  # Show the full path in the tooltip (ALSO USED FOR READING BACK FOR AUTO-COMPLETE)
             # label.setStyleSheet("QLabel { padding: 2px; }")  # this doesn't expand the label size, so it doesn't work
             item = QListWidgetItem()
             self.suggestionsListWidget.addItem(item)
