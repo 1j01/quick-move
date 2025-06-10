@@ -143,7 +143,25 @@ class MainWindow(QMainWindow):
                 # Use tooltip() instead of text() to avoid HTML in the input field
                 # Could alternatively store a custom property on the label with the full path.
                 # Do we want a tooltip? Maybe, so I've done it this way.
-                self.destinationEdit.setText(label.toolTip() + os.path.sep)
+                new_text = label.toolTip() + os.path.sep
+                # Instead of self.destinationEdit.setText, which will erase undo history,
+                # use the QTextCursor API to set the text in an undoable way.
+                # ...textCursor method doesn't seem to exist on QLineEdit...
+
+                # cursor = self.destinationEdit.textCursor()
+                # cursor.joinPreviousEditBlock()
+                # cursor.setPosition(0, QTextCursor.MoveAnchor)
+                # cursor.setPosition(len(new_text), QTextCursor.KeepAnchor)
+                # cursor.removeSelectedText()
+                # cursor.insertText(new_text)
+                # cursor.endEditBlock()
+
+                # This works, although when you undo, text is selected that you didn't select.
+                self.destinationEdit.selectAll()
+                # self.destinationEdit.clear()  # would create an unnecessary undo step with the field empty
+                self.destinationEdit.insert(new_text)
+
+
 
     def move_files(self):
         """Move selected files to the target directory, and exit if successful."""
