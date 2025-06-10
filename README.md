@@ -5,7 +5,6 @@ Quickly move files by typing where you want them to go.
 The fastest workflow for reorganizing thousands of files.
 
 - [x] Move files to a folder by typing its name
-  - technically works... but need to improve matching/autocomplete for this tool to be useful
 - [ ] Fuzzy folder name completion
 - [ ] Create folders on the fly
 - [ ] AI suggestions for where to move files
