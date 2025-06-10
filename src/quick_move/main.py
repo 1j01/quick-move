@@ -93,6 +93,9 @@ class MainWindow(QMainWindow):
         self.destinationEdit.textChanged.connect(self.update_suggestions)  # pyright: ignore[reportUnknownMemberType]
         self.destinationEdit.setText(destination_scope)
 
+        # Keep the destinationEdit input field focused if you click on the suggestions list widget.
+        self.suggestionsListWidget.setFocusProxy(self.destinationEdit)
+
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
     # Also the event type is Optional. I don't know why yet.
     def keyPressEvent(self, event: QKeyEvent) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
