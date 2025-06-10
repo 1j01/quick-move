@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
 
         # Populate info about selected files
         self.payloadLabel.setTextFormat(Qt.TextFormat.PlainText)
-        self.payloadLabel.setText(f"Moving {len(payload)} file{'' if len(payload) == 1 else 's'}: {', '.join(payload)}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
+        self.payloadLabel.setText(f"Moving {len(payload)} file{'' if len(payload) == 1 else 's'}: {', '.join([os.path.basename(file) for file in payload])}" if payload else '⚠️ No files selected. The quick-move program should be run with files as arguments.')
 
         # Handle destination directory input
         self.destinationEdit.textChanged.connect(self.update_suggestions)  # pyright: ignore[reportUnknownMemberType]
