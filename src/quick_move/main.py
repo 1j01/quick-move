@@ -1,5 +1,6 @@
 """Main module for the Quick Move application."""
 
+from html import escape
 import os.path
 import signal
 import sys
@@ -182,13 +183,10 @@ class MainWindow(QMainWindow):
             html = ""
             last_idx = 0
             for start, end in suggestion.match_highlights:
-                # TODO: escape HTML characters in text
-                html += text[last_idx:start]
-                # TODO: escape HTML characters in text
-                html += f"<span style='background-color: rgba(255, 255, 0, 0.5); font-weight: bold'>{text[start:end]}</span>"
+                html += escape(text[last_idx:start])
+                html += f"<span style='background-color: rgba(255, 255, 0, 0.5); font-weight: bold'>{escape(text[start:end])}</span>"
                 last_idx = end
-            # TODO: escape HTML characters in text
-            html += text[last_idx:]
+            html += escape(text[last_idx:])
             label = QLabel()
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setText(html)
