@@ -52,6 +52,8 @@ A VS Code launch configuration is included for debugging. Press F5 to run the ap
 The app is built with PyQt6. Qt Designer is used to scaffold the UI with drag and drop. It edits `.ui` files, which are then loaded by a widget class.
 I hear there's also a way to compile `.ui` files to Python code.
 
+To avoid version conflicts, you may want to install `pyqt6-tools` (which includes Qt Designer) outside of the virtual environment, e.g. `pip install pyqt6-tools --user`. This may need to change if it's used for compiling `.ui` files in the future, but for now it's not included as a dependency, and the version of `pyqt6` is not set to match it.
+
 Run tests with:
 ```bash
 pytest -vv
