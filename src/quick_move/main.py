@@ -28,6 +28,8 @@ ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
 destination_scope = os.path.expanduser('~/Sync/')
 if not os.path.exists(destination_scope):
     destination_scope = os.path.expanduser('~/')
+# Normalize to native path separators (/ on Linux, \ on Windows)
+destination_scope = os.path.abspath(destination_scope)
 
 # Get payload from command line arguments
 payload = sys.argv[1:] if len(sys.argv) > 1 else []
@@ -141,7 +143,7 @@ class MainWindow(QMainWindow):
                 # Use tooltip() instead of text() to avoid HTML in the input field
                 # Could alternatively store a custom property on the label with the full path.
                 # Do we want a tooltip? Maybe, so I've done it this way.
-                self.destinationEdit.setText(label.toolTip() + "/")
+                self.destinationEdit.setText(label.toolTip() + os.path.sep)
 
     def move_files(self):
         """Move selected files to the target directory, and exit if successful."""
