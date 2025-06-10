@@ -103,8 +103,6 @@ class MainWindow(QMainWindow):
         elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
             self.accept_suggestion()
             self.move_files()
-        elif key == Qt.Key.Key_F1:
-            self.show_about()
         elif key == Qt.Key.Key_Up:
             self.suggestionsListWidget.setCurrentRow(max(0, self.suggestionsListWidget.currentRow() - 1))
         elif key == Qt.Key.Key_Down:
