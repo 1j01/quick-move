@@ -95,6 +95,7 @@ class MainWindow(QMainWindow):
         self.destinationEdit.textChanged.connect(self.update_suggestions)  # pyright: ignore[reportUnknownMemberType]
         self.destinationEdit.setText(destination_scope)
         self.destinationEdit.focusNextPrevChild = lambda next: True
+        self.destinationEdit.setFocus()
 
         # Keep the destinationEdit input field focused if you click on the suggestions list widget.
         self.suggestionsListWidget.setFocusProxy(self.destinationEdit)
