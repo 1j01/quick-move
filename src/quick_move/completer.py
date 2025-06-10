@@ -72,7 +72,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                     Completion(
                         path=Path(suggestion),
                         display_text=suggestion,
-                        match_highlights=[], # TODO
+                        match_highlights=[(2, 4), (5, 7)], # TODO
                         will_create_directory=False,
                         ai_suggested=False,
                     )

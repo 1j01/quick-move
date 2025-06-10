@@ -7,7 +7,7 @@ import sys
 from PyQt6 import uic
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QMainWindow,
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
                              QPushButton)
 
 from quick_move import __version__
@@ -146,7 +146,27 @@ class MainWindow(QMainWindow):
         # TODO: icons/styling for directories to be created, AI suggestions
         # self.model.setStringList([suggestion.display_text for suggestion in suggestions])
         self.suggestionsListWidget.clear()
-        self.suggestionsListWidget.addItems([suggestion.display_text for suggestion in suggestions])
+        self.suggestionsListWidget.clear()
+        for suggestion in suggestions:
+            # suggestion.match_highlights is a list of (start, end) tuples
+            text = suggestion.display_text
+            html = ""
+            last_idx = 0
+            for start, end in suggestion.match_highlights:
+                # TODO: escape HTML characters in text
+                html += text[last_idx:start]
+                # TODO: escape HTML characters in text
+                html += f"<span style='background-color: yellow'>{text[start:end]}</span>"
+                last_idx = end
+            # TODO: escape HTML characters in text
+            html += text[last_idx:]
+            label = QLabel()
+            label.setTextFormat(Qt.TextFormat.RichText)
+            label.setText(html)
+            # label.setStyleSheet("QLabel { padding: 2px; }")  # this doesn't expand the label size, so it doesn't work
+            item = QListWidgetItem()
+            self.suggestionsListWidget.addItem(item)
+            self.suggestionsListWidget.setItemWidget(item, label)
         self.suggestionsListWidget.setCurrentRow(0)
 
     def show_about(self):
