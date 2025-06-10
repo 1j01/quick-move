@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
                 # TODO: escape HTML characters in text
                 html += text[last_idx:start]
                 # TODO: escape HTML characters in text
-                html += f"<span style='background-color: yellow'>{text[start:end]}</span>"
+                html += f"<span style='background-color: rgba(255, 255, 0, 0.5); font-weight: bold'>{text[start:end]}</span>"
                 last_idx = end
             # TODO: escape HTML characters in text
             html += text[last_idx:]
