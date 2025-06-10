@@ -93,22 +93,6 @@ class MainWindow(QMainWindow):
         self.destinationEdit.textChanged.connect(self.update_suggestions)  # pyright: ignore[reportUnknownMemberType]
         self.destinationEdit.setText(destination_scope)
         self.destinationEdit.focusNextPrevChild = lambda next: True
-        # original_keyPressEvent = self.destinationEdit.keyPressEvent
-        # def destinationEditKeyPressEvent(event: QKeyEvent) -> None:
-        #     """Handle key presses in the destination input field."""
-        #     print(f"DestinationEdit Key pressed: {event.key()} (Qt.Key.{Qt.Key(event.key()).name}, {event.text()})")
-        #     original_keyPressEvent(event)
-        #     self.keyPressEvent(event)  # Forward the event to the main window's keyPressEvent
-        # self.destinationEdit.keyPressEvent = destinationEditKeyPressEvent
-        # self.destinationEdit.grabKeyboard()
-
-
-        # def eventFilter(event: QKeyEvent) -> bool:
-        #     """Filter key events for the destination input field."""
-        #     if event.type() == QKeyEvent.Type.KeyPress:
-        #         self.keyPressEvent(event)
-        #     return False
-        # self.destinationEdit.installEventFilter(eventFilter)
 
         # Keep the destinationEdit input field focused if you click on the suggestions list widget.
         self.suggestionsListWidget.setFocusProxy(self.destinationEdit)
@@ -179,7 +163,6 @@ class MainWindow(QMainWindow):
         """Update the suggestions list based on the destination directory input."""
         suggestions = get_completions(self.destinationEdit.text(), destination_scope)
         # TODO: icons/styling for directories to be created, AI suggestions
-        # self.model.setStringList([suggestion.display_text for suggestion in suggestions])
         self.suggestionsListWidget.clear()
         self.suggestionsListWidget.clear()
         for suggestion in suggestions:
