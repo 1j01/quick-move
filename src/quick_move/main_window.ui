@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Quick Move</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>folder-with-arrow.svg</normaloff>folder-with-arrow.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>

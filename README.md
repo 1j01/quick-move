@@ -1,4 +1,4 @@
-# Quick Move
+# <img src="src/quick_move/folder-with-arrow.svg" height="32"> Quick Move
 
 Quickly move files by typing where you want them to go.
 
