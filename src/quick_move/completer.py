@@ -49,7 +49,13 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
         else:
             break
 
-    suggestions = [os.path.join(search_from, file_name) for file_name in sorted(os.listdir(search_from))]
+    # Walk the directory and find matching names
+    suggestions: list[str] = []
+    for root, dirs, files in os.walk(search_from):
+        for name in sorted(dirs + files):
+            if any(crumb.lower() in name.lower() for crumb in search_crumbs):
+                suggestions.append(os.path.join(root, name))
+
     return [
         Completion(
             path=Path(suggestion),
