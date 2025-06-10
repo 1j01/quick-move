@@ -42,12 +42,16 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     # Find the deepest existing directory that exactly matches the search path
     search_crumbs = os.path.split(search)
     search_from = folder_scope
+    consumed_crumbs: list[str] = []
     for crumb in search_crumbs:
         sub_path = os.path.join(search_from, crumb)
         if os.path.isdir(sub_path):
             search_from = sub_path
+            consumed_crumbs.append(crumb)
         else:
             break
+
+    search_crumbs = search_crumbs[len(consumed_crumbs):]
 
     # Walk the directory and find matching names
     suggestions: list[str] = []
