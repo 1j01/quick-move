@@ -103,7 +103,9 @@ class MainWindow(QMainWindow):
         elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
             item = self.suggestionsListWidget.currentItem()
             if item is not None:
-                self.destinationEdit.setText(item.text())
+                label = self.suggestionsListWidget.itemWidget(item)
+                if label is not None:
+                    self.destinationEdit.setText(label.text())  # type: ignore
             self.move_files()
         elif key == Qt.Key.Key_F1:
             self.show_about()
