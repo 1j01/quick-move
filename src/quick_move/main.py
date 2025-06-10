@@ -15,6 +15,7 @@ from quick_move import __version__
 from PyQt6.QtWidgets import QMessageBox
 
 from quick_move.completer import get_completions
+from quick_move.helpers import waitForPaste
 
 # Allow Ctrl+C to exit the application. Qt doesn't handle interrupts by default.
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -35,29 +36,42 @@ destination_scope = os.path.abspath(destination_scope) + os.path.sep
 payload = sys.argv[1:] if len(sys.argv) > 1 else []
 # Get selection with desktop automation
 if payload and payload[0] == '--from-clipboard':
-    # import keyboard
     import pyperclip
     original_clipboard = pyperclip.paste()
-    # keyboard.send('ctrl+x')
-    # Instead of keyboard, use xdotool to avoid needing root permissions
-    import subprocess
-    subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+x'], check=True)
-    # Does pyperclip.paste() wait for the clipboard to change at all, or is it dumb?
-    new_clipboard = pyperclip.paste()
+    # Clear the clipboard in order to wait for it to be populated (even if the same data is copied that was there originally).
+    pyperclip.copy('')
+
+    if os.name == 'nt':
+        import keyboard
+        # keyboard.send('ctrl+x')
+        keyboard.send('ctrl+shift+c')  # Copy As Path in Windows Explorer
+    else:
+        # import keyboard
+        # keyboard.send('ctrl+x')
+        # Instead of keyboard, use xdotool to avoid needing root permissions
+        import subprocess
+        subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+x'], check=True)
+    # This may look like a race condition, where if the clipboard is updated before we start waiting for it to change, it will not be detected.
+    # However, waitForPaste does not compare against a snapshot of the clipboard, it waits for a non-empty clipboard.
+    # We should get the new clipboard content even if it's already changed before calling waitForPaste.
+    # We just have to make sure to empty the clipboard before attempting to copy the selection.
+    try:
+        new_clipboard = waitForPaste(timeout=5)
+    except pyperclip.PyperclipTimeoutException as e:
+        # Show a message box and exit
+        pyperclip.copy(original_clipboard)
+        print(f"Error: {e}\n\nThe program may not have permission to send keyboard events to Windows Explorer.")
+        # TODO: for a message box, we need the QApplication to be running.
+        # QMessageBox.critical(None, "Error", str(e) + "\n\nThe program may not have permission to send keyboard events to Windows Explorer.")
+        sys.exit(1)
+
     pyperclip.copy(original_clipboard)
-    # More robust might be to set the clipboard to empty, then ctrl+x, then wait for the clipboard to change,
-    # with some timeout.
-    # Currently, if you run the program after copying/cutting the selection, it will be identical to the original clipboard,
-    # and the payload will be considered empty.
-    if new_clipboard == original_clipboard:
-        print("new_clipboard is the same as original_clipboard, assuming no selection was made.")
-        print(f"original_clipboard: {original_clipboard}")
+
+    if new_clipboard == '':
         payload = []
     else:
-        print("new_clipboard is different from original_clipboard, assuming selection was made.")
-        print(f"new_clipboard: {new_clipboard}")
-        print(f"original_clipboard: {original_clipboard}")
-        # TODO: split on spaces, handle quoting
+        # TODO: split on spaces or newlines, and handle quoting
+        # depending on the OS and file manager
         payload = new_clipboard.splitlines()
 
 class MainWindow(QMainWindow):
