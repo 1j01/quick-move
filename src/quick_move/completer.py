@@ -32,15 +32,10 @@ MAX_COMPLETIONS = 100
 
 def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     """Get file path completions based on the search input and folder scope."""
-    # TODO: handle relative vs absolute paths (QCompleter only does a prefix match)
-    # TODO: fuzzy matching
-
+    # Normalize the search input
     search = search.strip()
-    # if not search:
-    #     self.model.setStringList([])
-    #     return
 
-    # Normalize
+    # Normalize the folder scope
     folder_scope = os.path.expanduser(folder_scope)
     if not os.path.isabs(folder_scope):
         folder_scope = os.path.join(os.getcwd(), folder_scope)
@@ -57,10 +52,13 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
             consumed_crumbs.append(crumb)
         else:
             break
-
+    # Consume the crumbs that matched exactly
+    # (Could do this in the same loop, with a different type of loop, alternatively)
     search_crumbs = search_crumbs[len(consumed_crumbs):]
 
     # Walk the directory and find matching names
+    # TODO: fuzzier matching, e.g. using difflib.get_close_matches or similar
+    # TODO: sort completions by relevance, e.g. by length of the match, how many crumbs match, how in order the matches are
     completions: list[Completion] = []
     steps = 0
     for root, dirs, _files in os.walk(search_from):
@@ -74,7 +72,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                     Completion(
                         path=Path(suggestion),
                         display_text=suggestion,
-                        match_highlights=[],
+                        match_highlights=[], # TODO
                         will_create_directory=False,
                         ai_suggested=False,
                     )
