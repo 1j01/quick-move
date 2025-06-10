@@ -5,7 +5,7 @@ import signal
 import sys
 
 from PyQt6 import uic
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QEvent, Qt
 from PyQt6.QtGui import QAction, QKeyEvent
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
                              QPushButton)
@@ -92,15 +92,44 @@ class MainWindow(QMainWindow):
         # Handle destination directory input
         self.destinationEdit.textChanged.connect(self.update_suggestions)  # pyright: ignore[reportUnknownMemberType]
         self.destinationEdit.setText(destination_scope)
+        self.destinationEdit.focusNextPrevChild = lambda next: True
+        # original_keyPressEvent = self.destinationEdit.keyPressEvent
+        # def destinationEditKeyPressEvent(event: QKeyEvent) -> None:
+        #     """Handle key presses in the destination input field."""
+        #     print(f"DestinationEdit Key pressed: {event.key()} (Qt.Key.{Qt.Key(event.key()).name}, {event.text()})")
+        #     original_keyPressEvent(event)
+        #     self.keyPressEvent(event)  # Forward the event to the main window's keyPressEvent
+        # self.destinationEdit.keyPressEvent = destinationEditKeyPressEvent
+        # self.destinationEdit.grabKeyboard()
+
+
+        # def eventFilter(event: QKeyEvent) -> bool:
+        #     """Filter key events for the destination input field."""
+        #     if event.type() == QKeyEvent.Type.KeyPress:
+        #         self.keyPressEvent(event)
+        #     return False
+        # self.destinationEdit.installEventFilter(eventFilter)
 
         # Keep the destinationEdit input field focused if you click on the suggestions list widget.
         self.suggestionsListWidget.setFocusProxy(self.destinationEdit)
+
+    def event(self, event: QEvent | None) -> bool:
+        if isinstance(event, QKeyEvent):
+            # If Tab is pressed, accept the current suggestion
+            # This has to be handled specially because Tab is handled specially by Qt
+            # and doesn't propagate to the keyPressEvent handler.
+            # There may be a much cleaner way to do this. Who knows!
+            if event.key() == Qt.Key.Key_Tab and event.type() == QEvent.Type.ShortcutOverride:
+                self.accept_suggestion()
+                return True
+        return super(MainWindow, self).event(event)
 
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
     # Also the event type is Optional. I don't know why yet.
     def keyPressEvent(self, event: QKeyEvent) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Handle key presses."""
         key = event.key()
+        # print(f"Key pressed: {key} (Qt.Key.{Qt.Key(key).name}, {event.text()})")
         if key == Qt.Key.Key_Escape:
             self.close()
         elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
@@ -110,10 +139,9 @@ class MainWindow(QMainWindow):
             self.suggestionsListWidget.setCurrentRow(max(0, self.suggestionsListWidget.currentRow() - 1))
         elif key == Qt.Key.Key_Down:
             self.suggestionsListWidget.setCurrentRow(min(self.suggestionsListWidget.count() - 1, self.suggestionsListWidget.currentRow() + 1))
+        # See event() method for Tab handling.
         # elif key == Qt.Key.Key_Tab:
-        #     item = self.suggestionsListWidget.currentItem()
-        #     if item is not None:
-        #         self.destinationEdit.setText(item.text())
+        #     self.accept_suggestion()
 
         super(MainWindow, self).keyPressEvent(event)
 
