@@ -27,37 +27,29 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     """Get file path completions based on the search input and folder scope."""
     # TODO: handle relative vs absolute paths (QCompleter only does a prefix match)
     # TODO: fuzzy matching
-    # TODO: probably loop to find the deepest existing directory instead of only checking the parent
 
     search = search.strip()
     # if not search:
     #     self.model.setStringList([])
     #     return
 
-    # Normalize the paths
+    # Normalize
     folder_scope = os.path.expanduser(folder_scope)
     if not os.path.isabs(folder_scope):
         folder_scope = os.path.join(os.getcwd(), folder_scope)
     folder_scope = os.path.normpath(folder_scope)
 
-    search = os.path.expanduser(search)
-    if not os.path.isabs(search):
-        search = os.path.join(folder_scope, search)
-    search = os.path.normpath(search)
-
-    suggestions: list[str] = []
-
-    # If the path is a directory, list its contents
-    if os.path.isdir(search):
-        suggestions = sorted(os.listdir(search))
-    else:
-        # If the path is not a directory, suggest the parent directory's contents
-        parent_dir = os.path.dirname(search)
-        if os.path.isdir(parent_dir):
-            suggestions = sorted(os.listdir(parent_dir))
+    # Find the deepest existing directory that exactly matches the search path
+    search_crumbs = os.path.split(search)
+    search_from = folder_scope
+    for crumb in search_crumbs:
+        sub_path = os.path.join(search_from, crumb)
+        if os.path.isdir(sub_path):
+            search_from = sub_path
         else:
-            suggestions = []
+            break
 
+    suggestions = [os.path.join(search_from, file_name) for file_name in sorted(os.listdir(search_from))]
     return [
         Completion(
             path=Path(suggestion),

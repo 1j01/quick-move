@@ -21,6 +21,7 @@ import pytest
 from quick_move.completer import get_completions
 
 # TODO: Actually test relative paths instead of concatenating a temporary path with the input path.
+# TODO: Test ~/ ~user/ and maybe even %USERPROFILE% expansions, although the latter is less likely to be typed by a user.
 # Might need a proper FS mock.
 @pytest.mark.parametrize("input_path, expected", [
     # Exact folder paths (with or without trailing slash)
