@@ -29,7 +29,7 @@ destination_scope = os.path.expanduser('~/Sync/')
 if not os.path.exists(destination_scope):
     destination_scope = os.path.expanduser('~/')
 # Normalize to native path separators (/ on Linux, \ on Windows)
-destination_scope = os.path.abspath(destination_scope)
+destination_scope = os.path.abspath(destination_scope) + os.path.sep
 
 # Get payload from command line arguments
 payload = sys.argv[1:] if len(sys.argv) > 1 else []
