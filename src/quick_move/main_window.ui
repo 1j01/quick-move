@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>folder-with-arrow.svg</normaloff>folder-with-arrow.svg</iconset>
+    <normaloff>folder-with-arrow.png</normaloff>folder-with-arrow.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
