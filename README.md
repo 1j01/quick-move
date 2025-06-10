@@ -23,6 +23,14 @@ The fastest workflow for reorganizing thousands of files.
 
 If you encounter any bugs or issues with the app, please report them in the [Issues section](https://github.com/1j01/quick-move/issues) of the project on GitHub.
 
+Known issues:
+- Pressing Tab to complete a folder name is not undoable with Ctrl+Z
+- Pressing Enter will always accept a suggestion, even if you want to create a new folder, or use the currently typed path. You can only create a new folder if nothing matches.
+- If you want to move files to the root of the configured destination scope, right now I guess it'll say "Please specify a destination directory."
+  I haven't needed to do this yet, and haven't tried it.
+- HTML is not escaped in file names.
+- **Experimental**: `quick-move --from-clipboard` may go haywire and spam Ctrl+Z instead of pressing Ctrl+X once; this may be an issue with the interaction of xdotool and Synergy; I'm not sure. Also it assumes newline-separated file paths in the clipboard, which does not reflect reality, at least for Thunar, where I've tested it. Thunar uses spaces as separators. File names can contain spaces, so there's presumably a bit more complexity there. I bailed on this feature after the desktop automation code literally deleted itself (spammed Ctrl+Z, and I tried to stop it by pressing Ctrl to release the key, but it continued pressing Z, which erased all the redos, and I looked at the Local History in VS Code and there was lots of entries where it was messing up the file, but none with the complete code. Amazing. This is why software should use non-linear undo history.)
+
 ## License
 
 Copyright © 2025 Isaiah Odhner
