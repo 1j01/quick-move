@@ -54,22 +54,22 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     search_crumbs = search_crumbs[len(consumed_crumbs):]
 
     # Walk the directory and find matching names
-    suggestions: list[str] = []
+    completions: list[Completion] = []
     for root, dirs, files in os.walk(search_from):
         for name in sorted(dirs + files):
             if any(crumb.lower() in name.lower() for crumb in search_crumbs):
-                suggestions.append(os.path.join(root, name))
+                suggestion = os.path.join(root, name)
+                completions.append(
+                    Completion(
+                        path=Path(suggestion),
+                        display_text=suggestion,
+                        match_highlights=[],
+                        will_create_directory=False,
+                        ai_suggested=False,
+                    )
+                )
 
-    return [
-        Completion(
-            path=Path(suggestion),
-            display_text=suggestion,
-            match_highlights=[],
-            will_create_directory=False,
-            ai_suggested=False,
-        )
-        for suggestion in suggestions
-    ]
+    return completions
 
 
 class CompletionItemDelegate(QItemDelegate):
