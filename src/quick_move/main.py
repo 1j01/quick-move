@@ -101,11 +101,7 @@ class MainWindow(QMainWindow):
         if key == Qt.Key.Key_Escape:
             self.close()
         elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
-            item = self.suggestionsListWidget.currentItem()
-            if item is not None:
-                label = self.suggestionsListWidget.itemWidget(item)
-                if label is not None:
-                    self.destinationEdit.setText(label.text())  # type: ignore
+            self.accept_suggestion()
             self.move_files()
         elif key == Qt.Key.Key_F1:
             self.show_about()
@@ -119,6 +115,14 @@ class MainWindow(QMainWindow):
         #         self.destinationEdit.setText(item.text())
 
         super(MainWindow, self).keyPressEvent(event)
+
+    def accept_suggestion(self):
+        """Accept the currently selected suggestion and update the destination input field."""
+        item = self.suggestionsListWidget.currentItem()
+        if item is not None:
+            label = self.suggestionsListWidget.itemWidget(item)
+            if label is not None:
+                self.destinationEdit.setText(label.text())  # type: ignore
 
     def move_files(self):
         """Move selected files to the target directory, and exit if successful."""
