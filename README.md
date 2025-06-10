@@ -46,7 +46,7 @@ This project is licensed under the GNU General Public License, version 3. See [`
 - Install `quick-move` with `pip install -e .`
 - Run the app with `quick-move`
 - Optionally, expose the CLI globally (i.e. outside the virtual environment) with `link_cli_globally.sh`; this is useful for testing integration with file managers, or global hotkeys
-  - This script is tested only on Linux. (It includes some half-hearted Windows support which presumably doesn't work.)
+  - This script is tested on Linux, as well as Windows with Git Bash. It may not work when run from a different shell, such as PowerShell or Command Prompt on Windows.
 
 A VS Code launch configuration is included for debugging. Press F5 to run the app in debug mode.
 

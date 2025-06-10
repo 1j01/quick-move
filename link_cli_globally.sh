@@ -8,9 +8,10 @@ CLI="quick-move"
 # LINK_PATH="/usr/local/bin/$CLI" ? not sure of the difference
 LINK_PATH="$HOME/.local/bin/$CLI"
 LINK_TARGET="$REPO_DIR/.venv/bin/$CLI"
-# On Windows, venv uses a Scripts directory instead of bin
-# and maybe exe extension (untested)
-# Also, not sure where to put the symlink on Windows.
+# On Windows, venv uses a Scripts directory instead of bin, and exe extension.
+# Also, not sure if there's a better place to put the symlink on Windows,
+# but this seems to work with Git Bash.
+# It might be better to convert this script to python, so it can be run from cmd.exe or PowerShell as well.
 if [ -d "$REPO_DIR/.venv/Scripts" ]; then
     LINK_TARGET="$REPO_DIR/.venv/Scripts/$CLI.exe"
     LINK_PATH="$HOME/.local/bin/$CLI.exe"
