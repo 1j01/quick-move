@@ -150,8 +150,6 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Warning", "Please specify a destination directory.")
             return
         if not os.path.exists(destination):
-            # QMessageBox.warning(self, "Warning", f"The destination '{destination}' does not exist.")
-            # return
             if QMessageBox.question(self, "Create Directory", f"The destination '{destination}' does not exist. Do you want to create it?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
                 try:
                     os.makedirs(destination, exist_ok=True)
