@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
                 # Use tooltip() instead of text() to avoid HTML in the input field
                 # Could alternatively store a custom property on the label with the full path.
                 # Do we want a tooltip? Maybe, so I've done it this way.
-                self.destinationEdit.setText(label.toolTip())
+                self.destinationEdit.setText(label.toolTip() + "/")
 
     def move_files(self):
         """Move selected files to the target directory, and exit if successful."""
