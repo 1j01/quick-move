@@ -23,6 +23,13 @@ class Completion:
     will_create_directory: bool
     ai_suggested: bool
 
+# This prevents the program from hanging when searching large directories, e.g. the root directory.
+# Since os.walk uses breadth-first search by default, it still gives good results, as nearby directories are searched first.
+# That said, there may be pathological cases where it will not find even fairly shallow matches.
+# I haven't explored this in "depth" (haha) yet.
+MAX_ITERATIONS = 1000
+MAX_COMPLETIONS = 100
+
 def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     """Get file path completions based on the search input and folder scope."""
     # TODO: handle relative vs absolute paths (QCompleter only does a prefix match)
@@ -55,7 +62,11 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
 
     # Walk the directory and find matching names
     completions: list[Completion] = []
+    steps = 0
     for root, dirs, _files in os.walk(search_from):
+        steps += 1
+        if steps > MAX_ITERATIONS or len(completions) > MAX_COMPLETIONS:
+            break
         for name in sorted(dirs):
             if any(crumb.lower() in name.lower() for crumb in search_crumbs):
                 suggestion = os.path.join(root, name)
@@ -69,7 +80,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                     )
                 )
 
-    return completions
+    return completions[:MAX_COMPLETIONS]
 
 
 class CompletionItemDelegate(QItemDelegate):
