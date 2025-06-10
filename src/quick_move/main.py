@@ -145,11 +145,21 @@ class MainWindow(QMainWindow):
         import shutil
         destination = self.destinationEdit.text().strip()
         if not destination:
+            # There's a potential UX issue if you want to move files to the root of the configured destination scope.
+            # Right now I guess it'll just give you this error message.
             QMessageBox.warning(self, "Warning", "Please specify a destination directory.")
             return
         if not os.path.exists(destination):
-            QMessageBox.warning(self, "Warning", f"The destination '{destination}' does not exist.")
-            return
+            # QMessageBox.warning(self, "Warning", f"The destination '{destination}' does not exist.")
+            # return
+            if QMessageBox.question(self, "Create Directory", f"The destination '{destination}' does not exist. Do you want to create it?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes:
+                try:
+                    os.makedirs(destination, exist_ok=True)
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", f"Failed to create directory '{destination}': {e}")
+                    return
+            else:
+                return
         if not os.path.isdir(destination):
             QMessageBox.warning(self, "Warning", f"The destination '{destination}' is not a directory.")
             return
