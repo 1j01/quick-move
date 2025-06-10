@@ -55,8 +55,8 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
 
     # Walk the directory and find matching names
     completions: list[Completion] = []
-    for root, dirs, files in os.walk(search_from):
-        for name in sorted(dirs + files):
+    for root, dirs, _files in os.walk(search_from):
+        for name in sorted(dirs):
             if any(crumb.lower() in name.lower() for crumb in search_crumbs):
                 suggestion = os.path.join(root, name)
                 completions.append(
