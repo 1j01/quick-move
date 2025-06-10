@@ -68,11 +68,21 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
         for name in sorted(dirs):
             if not search_crumbs or any(crumb.lower() in name.lower() for crumb in search_crumbs):
                 suggestion = os.path.join(root, name)
+                # Calculating match highlights separate from actual matching is a little sus,
+                # (risks differing/drifting implementations) but it's good enough for now.
+                match_highlights: list[tuple[int, int]] = []
+                if search_crumbs:
+                    suggestion_lower = suggestion.lower()
+                    for crumb in search_crumbs:
+                        crumb_lower = crumb.lower()
+                        start = suggestion_lower.find(crumb_lower)
+                        if start != -1:
+                            match_highlights.append((start, start + len(crumb)))
                 completions.append(
                     Completion(
                         path=Path(suggestion),
                         display_text=suggestion,
-                        match_highlights=[(2, 4), (5, 7)], # TODO
+                        match_highlights=match_highlights,
                         will_create_directory=False,
                         ai_suggested=False,
                     )
