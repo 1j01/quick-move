@@ -66,7 +66,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
         if steps > MAX_ITERATIONS or len(completions) > MAX_COMPLETIONS:
             break
         for name in sorted(dirs):
-            if any(crumb.lower() in name.lower() for crumb in search_crumbs):
+            if not search_crumbs or any(crumb.lower() in name.lower() for crumb in search_crumbs):
                 suggestion = os.path.join(root, name)
                 completions.append(
                     Completion(
