@@ -1,6 +1,6 @@
 
 # Note: Make sure to update setup.cfg install_requires as well!
-PyQt6==6.5.3
+PyQt6==6.9.1
 keyboard==0.13.5
 pyperclip==1.9.0
 # -----------------------------------------------------------
