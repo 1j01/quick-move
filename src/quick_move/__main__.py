@@ -6,7 +6,7 @@ import signal
 import sys
 
 from PyQt6 import uic
-from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtCore import QEvent, QTimer, Qt
 from PyQt6.QtGui import QAction, QKeyEvent
 from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
                              QPushButton)
@@ -121,11 +121,48 @@ class MainWindow(QMainWindow):
         self.destinationEdit.focusNextPrevChild = lambda next: True
         self.destinationEdit.setFocus()
 
+        def handle_destination_edit_event(a0: QEvent | None) -> bool:
+            """Handle events on the destination input field."""
+            event = a0
+            if isinstance(event, QKeyEvent):
+                # print(f"DestinationEdit key event: {event.key()} (Qt.Key.{Qt.Key(event.key()).name}), modifiers: {event.modifiers()} (Qt.KeyboardModifier.{Qt.KeyboardModifier(event.modifiers()).name}), type: {event.type()} (QEvent.Type.{QEvent.Type(event.type()).name})")
+                if (
+                    event.key() == Qt.Key.Key_Z and
+                    (event.modifiers() & ~Qt.KeyboardModifier.ShiftModifier) == Qt.KeyboardModifier.ControlModifier and
+                    event.type() != QEvent.Type.KeyRelease
+                ):
+                    # Place cursor at end of the field if Ctrl+Z or Ctrl+Shift+Z is pressed
+                    # and everything is selected.
+                    # This works around the selectAll()+insert() leaving everything selected in the undo state
+                    # when accepting a suggestion.
+
+                    def place_cursor_at_end():
+                        # print("Text matches selection?", self.destinationEdit.selectedText() == self.destinationEdit.text(),
+                        #     "Text:", self.destinationEdit.text(),
+                        #     "Selected text:", self.destinationEdit.selectedText(),
+                        #     "Cursor position:", self.destinationEdit.cursorPosition(),
+                        #     "Selection start:", self.destinationEdit.selectionStart(),
+                        #     "Selection end:", self.destinationEdit.selectionEnd(),
+                        #     "Selection length:", self.destinationEdit.selectionLength(),
+                        #     "Text length:", len(self.destinationEdit.text()))
+
+                        # if self.destinationEdit.selectedText() == self.destinationEdit.text():
+                        if self.destinationEdit.selectionLength() == len(self.destinationEdit.text()):
+                            print("Placing cursor at end of destinationEdit.")
+                            self.destinationEdit.end(False)
+
+                    QTimer.singleShot(0, place_cursor_at_end)  # pyright: ignore[reportUnknownMemberType]
+
+            return super(QLineEdit, self.destinationEdit).event(event)
+
+        self.destinationEdit.event = handle_destination_edit_event
+
         # Keep the destinationEdit input field focused if you click on the suggestions list widget.
         self.suggestionsListWidget.setFocusProxy(self.destinationEdit)
 
     def event(self, event: QEvent | None) -> bool:
         if isinstance(event, QKeyEvent):
+            # print(f"Key event: {event.key()} (Qt.Key.{Qt.Key(event.key()).name}), modifiers: {event.modifiers()} (Qt.KeyboardModifier.{Qt.KeyboardModifier(event.modifiers()).name}), type: {event.type()} (QEvent.Type.{QEvent.Type(event.type()).name})")
             # If Tab is pressed, accept the current suggestion
             # This has to be handled specially because Tab is handled specially by Qt
             # and doesn't propagate to the keyPressEvent handler.
@@ -133,6 +170,11 @@ class MainWindow(QMainWindow):
             if event.key() == Qt.Key.Key_Tab and event.type() == QEvent.Type.ShortcutOverride:
                 self.accept_suggestion()
                 return True
+            # elif event.key() == Qt.Key.Key_Z and event.modifiers() == Qt.KeyboardModifier.ControlModifier: # and event.type() == QEvent.Type.ShortcutOverride:
+            #     # Place cursor at end of the field
+            #     print("Ctrl+Z pressed, placing cursor at end of destinationEdit.")
+            #     self.destinationEdit.setCursorPosition(len(self.destinationEdit.text()))
+
         return super(MainWindow, self).event(event)
 
     # Argument is named generically as `a0` in PyQt6, hence the "incompatibility"
@@ -140,7 +182,7 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event: QKeyEvent) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Handle key presses."""
         key = event.key()
-        # print(f"Key pressed: {key} (Qt.Key.{Qt.Key(key).name}, {event.text()})")
+        # print(f"Key pressed: {key} (Qt.Key.{Qt.Key(key).name})")
         if key == Qt.Key.Key_Escape:
             self.close()
         elif key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
@@ -179,6 +221,8 @@ class MainWindow(QMainWindow):
                 # cursor.endEditBlock()
 
                 # This works, although when you undo, text is selected that you didn't select.
+                # I've worked around that by deselecting when you press Ctrl+Z if everything is selected.
+                # (See handle_destination_edit_event.)
                 self.destinationEdit.selectAll()
                 # self.destinationEdit.clear()  # would create an unnecessary undo step with the field empty
                 self.destinationEdit.insert(new_text)

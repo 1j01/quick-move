@@ -31,7 +31,6 @@ Known issues:
 - Pressing Enter will always accept a suggestion, even if you want to create a new folder, or use the currently typed path. You can only create a new folder if nothing matches.
 - If you want to move files to the root of the configured destination scope, right now I guess it'll say "Please specify a destination directory."
   I haven't needed to do this yet, and haven't tried it.
-- If you accept a suggestion with Tab and then undo with Ctrl+Z, the text in the field is unnecessarily selected. This is a small price to pay for preserving undo history.
 - (If you press the shortcut in Thunar with nothing selected, it will consider the current directory as the selected item. This is not a bug, but it may be unexpected. There doesn't seem to be a way in Thunar to disable the custom action if nothing is selected, while still allowing it on folders.)
 - **Experimental**: `quick-move --from-clipboard` may go haywire and spam Ctrl+Z instead of pressing Ctrl+X once; this may just be a bad interaction between xdotool and Synergy, though.
 
