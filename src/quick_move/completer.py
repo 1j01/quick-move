@@ -48,13 +48,14 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
 
     # Walk the directory and find matching names
     # TODO: fuzzier matching, e.g. using difflib.get_close_matches or similar
-    # TODO: sort completions by relevance, e.g. by length of the match, how many crumbs match, how in order the matches are
     completions: list[Completion] = []
     steps = 0
     for root, dirs, _files in os.walk(search_from):
         steps += 1
         if steps > MAX_ITERATIONS or len(completions) > MAX_COMPLETIONS:
             break
+        # Sorting here is not strictly necessary since matches are sorted later,
+        # but it may help with determinism in case MAX_COMPLETIONS or MAX_ITERATIONS is reached.
         for name in sorted(dirs):
             suggestion = os.path.join(root, name)
 
@@ -77,5 +78,19 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                         ai_suggested=False,
                     )
                 )
+
+    # sort completions by relevance, e.g. by length of the match, how many crumbs match (or maybe how many characters would be better), how in order the matches are
+    # TODO: prioritize matches that fit word boundaries, e.g. "bar" should match "foo/bar" before "foobar", and "foobar" before "foobarbaz"
+    # (and consider lowercase-to-uppercase letter pairs as word boundaries, for camelCase)
+    completions.sort(key=lambda c: (
+        # prioritize longer matches (total matched characters)
+        -sum(end - start for start, end in c.match_highlights),
+        # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
+        len(c.match_highlights),
+        # prioritize ordered match sets (by counting how many pairs are in order)
+        -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
+        # fallback to alphabetical order
+        c.display_text
+    ))
 
     return completions[:MAX_COMPLETIONS]
