@@ -267,10 +267,18 @@ class MainWindow(QMainWindow):
         self.suggestionsListWidget.clear()
         for suggestion in suggestions:
             # suggestion.match_highlights is a list of (start, end) tuples
+            # The ranges may be out of order and overlapping, so sort them and merge ranges that overlap or are adjacent,
+            merged_highlights: list[tuple[int, int]] = []
+            for start, end in sorted(suggestion.match_highlights):
+                if not merged_highlights or merged_highlights[-1][1] < start:
+                    merged_highlights.append((start, end))
+                else:
+                    merged_highlights[-1] = (merged_highlights[-1][0], max(merged_highlights[-1][1], end))
+
             text = suggestion.display_text
             html = ""
             last_idx = 0
-            for start, end in suggestion.match_highlights:
+            for start, end in merged_highlights:
                 html += escape(text[last_idx:start])
                 html += f"<span style='background-color: rgba(255, 255, 0, 0.5); font-weight: bold'>{escape(text[start:end])}</span>"
                 last_idx = end
