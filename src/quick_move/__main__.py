@@ -70,9 +70,17 @@ if payload and payload[0] == '--from-clipboard':
     if new_clipboard == '':
         payload = []
     else:
-        # TODO: split on spaces or newlines, and handle quoting
-        # depending on the OS and file manager
+        # Need to handle splitting, quoting, and escaping according to the OS and file manager
+        # Windows Explorer (with Ctrl+Shift+C) copies paths separated by newlines, surrounded by double quotes.
+        # Windows Explorer (with Ctrl+C or Ctrl+X) copies paths separated by spaces, unquoted. Spaces are ambiguous, so this is not suitable.
+        # Thunar (with Ctrl+C or Ctrl+X) copies paths separated by newlines, unquoted.
         payload = new_clipboard.splitlines()
+        # TODO: handle escaping? What would be escaped?
+        # Since paths are absolute, double quotes can't appear at the START of a path unless the path is quoted.
+        # However, a path can END with a double quote that is part of the file name.
+        # Also, we only want to strip ONE double quote at the start and end of the path, if it's quoted, otherwise we might remove a quote that is part of the file name.
+        # payload = [file.strip('"') for file in payload] ; naive
+        payload = [file[1:-1] if file.startswith('"') and file.endswith('"') else file for file in payload]
 
 class MainWindow(QMainWindow):
     def __init__(self):

@@ -11,9 +11,10 @@ The fastest workflow for reorganizing thousands of files.
   - [ ] Looks at destination folder (configured scope) structure as well as a history of recent moves
   - [ ] Looks at file names and contents
 - [ ] Works with any file manager via a global hotkey
-  - [x] Experimental desktop automation with a flag `quick-move --from-clipboard` which triggers <kbd>Ctrl+X</kbd> and reads the clipboard to get the selected files
+  - [x] Experimental desktop automation with a flag `quick-move --from-clipboard` which triggers <kbd>Ctrl+X</kbd> or <kbd>Ctrl+Shift+C</kbd> and reads the clipboard to get the selected files
 - [x] File manager integration (e.g. Nautilus, Nemo, Thunar, Dolphin, etc.) for a window-local hotkey
   - [x] Tested with Thunar, should work with others, as long as you can set a custom action to run `quick-move` with the selected files as arguments
+  - [x] AutoHotKey wrapper script to integrate with Windows Explorer
 - [x] Limit destination suggestions to a specific folder
   - currently hard-coded to the home directory, or if present `~/Sync` (default Syncthing folder)
 - [ ] Undo recent moves from a list
@@ -29,7 +30,7 @@ Known issues:
   I haven't needed to do this yet, and haven't tried it.
 - If you accept a suggestion with Tab and then undo with Ctrl+Z, the text in the field is unnecessarily selected. This is a small price to pay for preserving undo history.
 - (If you press the shortcut in Thunar with nothing selected, it will consider the current directory as the selected item. This is not a bug, but it may be unexpected. There doesn't seem to be a way in Thunar to disable the custom action if nothing is selected, while still allowing it on folders.)
-- **Experimental**: `quick-move --from-clipboard` may go haywire and spam Ctrl+Z instead of pressing Ctrl+X once; this may be an issue with the interaction of xdotool and Synergy; I'm not sure. Also it assumes newline-separated file paths in the clipboard, which does not reflect reality, at least for Thunar, where I've tested it. Thunar uses spaces as separators. File names can contain spaces, so there's presumably a bit more complexity there. I bailed on this feature after the desktop automation code literally deleted itself (spammed Ctrl+Z, and I tried to stop it by pressing Ctrl to release the key, but it continued pressing Z, which erased all the redos, and I looked at the Local History in VS Code and there was lots of entries where it was messing up the file, but none with the complete code. Amazing. This is why software should use non-linear undo history.)
+- **Experimental**: `quick-move --from-clipboard` may go haywire and spam Ctrl+Z instead of pressing Ctrl+X once; this may just be a bad interaction between xdotool and Synergy, though.
 
 ## License
 
