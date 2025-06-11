@@ -17,8 +17,11 @@ The fastest workflow for reorganizing thousands of files.
   - [x] AutoHotKey wrapper script to integrate with Windows Explorer
 - [x] Limit destination suggestions to a specific folder
   - currently hard-coded to the home directory, or if present `~/Sync` (default Syncthing folder)
-- [ ] Undo recent moves from a list
-  - [ ] A way to clear the history
+- [ ] Move history
+  - [ ] Undo recent moves from a list
+  - [ ] Open the destination folder of a move
+  - [ ] Default destination input to the last used folder (or include it as a suggestion)
+  - [ ] Option to clear the history
 
 ## Bugs and Issues
 
