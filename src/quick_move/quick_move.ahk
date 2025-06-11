@@ -1,7 +1,6 @@
 #Requires AutoHotkey v2.0
 
-; Only activate hotkey when explorer.exe is the foreground window
-#HotIf IsExplorerActive()
+#HotIf WinActive("ahk_class CabinetWClass") or WinActive("ahk_class ExploreWClass")
 
 ^+x::  ; Ctrl+Shift+X
 {
@@ -46,20 +45,20 @@
 ;     return exec.StdOut.ReadAll()
 ; }
 
-IsExplorerActive()
-{
-    try {
-        ; TODO: check for CabinetWClass? idk this seems to basically work
-        ; I haven't noticed it applying to the taskbar or anything so far,
-        ; though I know explorer.exe does more than just the file explorer
-        hwnd := WinActive("A")
-        pid := WinGetPID(hwnd)
-        return ProcessGetName(pid) = "explorer.exe"
-    }
-    catch {
-        return false
-    }
-}
+; IsExplorerActive()
+; {
+;     try {
+;         ; TODO: check for CabinetWClass? idk this seems to basically work
+;         ; I haven't noticed it applying to the taskbar or anything so far,
+;         ; though I know explorer.exe does more than just the file explorer
+;         hwnd := WinActive("A")
+;         pid := WinGetPID(hwnd)
+;         return ProcessGetName(pid) = "explorer.exe"
+;     }
+;     catch {
+;         return false
+;     }
+; }
 
 ;--------------------------------------------------------
 ; AUTO RELOAD THIS SCRIPT on Ctrl+S
