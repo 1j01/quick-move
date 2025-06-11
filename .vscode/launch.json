@@ -8,7 +8,7 @@
             "name": "Run Python App",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/quick_move/main.py",
+            "program": "${workspaceFolder}/src/quick_move/__main__.py",
             "console": "integratedTerminal",
             "justMyCode": false
         },
