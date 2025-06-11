@@ -55,18 +55,18 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
         if steps > MAX_ITERATIONS or len(completions) > MAX_COMPLETIONS:
             break
         for name in sorted(dirs):
-            if not search_crumbs or any(crumb.lower() in name.lower() for crumb in search_crumbs):
-                suggestion = os.path.join(root, name)
-                # Calculating match highlights separate from actual matching is a little sus,
-                # (risks differing/drifting implementations) but it's good enough for now.
-                match_highlights: list[tuple[int, int]] = []
-                if search_crumbs:
-                    suggestion_lower = suggestion.lower()
-                    for crumb in search_crumbs:
-                        crumb_lower = crumb.lower()
-                        start = suggestion_lower.find(crumb_lower)
-                        if start != -1:
-                            match_highlights.append((start, start + len(crumb)))
+            suggestion = os.path.join(root, name)
+
+            match_highlights: list[tuple[int, int]] = []
+            if search_crumbs:
+                suggestion_lower = suggestion.lower()
+                for crumb in search_crumbs:
+                    crumb_lower = crumb.lower()
+                    start = suggestion_lower.find(crumb_lower)
+                    if start != -1:
+                        match_highlights.append((start, start + len(crumb)))
+
+            if match_highlights or not search_crumbs:
                 completions.append(
                     Completion(
                         path=Path(suggestion),
