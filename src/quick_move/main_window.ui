@@ -97,7 +97,13 @@
     <addaction name="actionAbout_Quick_Move"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
+   <widget class="QMenu" name="menuHistory">
+    <property name="title">
+     <string>History</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuHistory"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
