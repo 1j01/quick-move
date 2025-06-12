@@ -17,28 +17,20 @@
 # - Input is "tiam"
 #   - Should suggest Project Stuff/Tiamblia, keeping the input field relative to the destination scope of "/home/io/Sync/" (which will be changeable and persistent)
 
-import os
 from pathlib import Path
 
-import pyfakefs
-import pyfakefs.fake_filesystem
 import pytest
+from pyfakefs.fake_filesystem import FakeFilesystem, OSType
 from pyfakefs.fake_filesystem_unittest import Patcher
 
 from quick_move.completer import get_completions
 from quick_move.helpers import tree
 from tests import accept
 
+
 # The "accept" module provides an --update-expected option to pytest to update expected results within tests.
 # It needs to modify the test files, so it shouldn't use the fake filesystem.
 # This fixture sets up a fake filesystem for testing, excluding the "accept" module.
-#
-# Note that --update-expected doesn't work with the `if os.name == "nt":` block below,
-# because my static analysis can't reverse the computation of the
-# path style conversion. (While it's a simple conversion in this case, it's impossible to reverse computation in general.)
-# (Perhaps an LLM could help, but I haven't even released this "accept" module as a library yet.)
-# So --update-expected only works on Linux and macOS, and the block has to be commented even though it would be skipped,
-# since the static analysis doesn't know about `os.name` and assumes the block is reachable.
 @pytest.fixture
 def my_fs():
     with Patcher(additional_skip_names=[accept]) as patcher:
@@ -123,7 +115,8 @@ def my_fs():
     # Relative path stays relative
     pytest.param("tiam", ["Project Stuff/Tiamblia"], marks=pytest.mark.xfail(reason="Currently gives absolute paths always")),
 ])
-def test_get_completions(input_path: str, expected: list[str], my_fs: pyfakefs.fake_filesystem.FakeFilesystem):
+def test_get_completions(input_path: str, expected: list[str], my_fs: FakeFilesystem):
+    my_fs.os = OSType.LINUX
     # Create a temporary directory structure for testing
     my_fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
     my_fs.create_dir("/home/io/Sync/Misc")  # pyright: ignore[reportUnknownMemberType]
@@ -134,18 +127,6 @@ def test_get_completions(input_path: str, expected: list[str], my_fs: pyfakefs.f
     print("Created test filesystem with structure:")
     for line in tree(Path("/")):
         print(line)
-
-    if os.name == "nt":
-        def normalize_path(path: str) -> str:
-            # print(f"Normalizing path: {path}, is_absolute: {Path(path).is_absolute()}")
-            # if Path(path).is_absolute():
-            # ugh, Path(path).is_absolute() is False for paths like "/home/io/Sync/" on Windows
-            # because the only thing that makes a path absolute on Windows is a drive letter (or maybe UNC path or whatever, but it doesn't do what I want is the point)
-            if path.startswith("/"):
-                path = f"C:{path}"
-            return path.replace("/", "\\")
-        input_path = normalize_path(input_path)
-        expected = [normalize_path(path) for path in expected]
 
     completions = get_completions(input_path, "/home/io/Sync/")
     result = [completion.display_text for completion in completions]
