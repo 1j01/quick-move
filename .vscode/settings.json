@@ -42,5 +42,11 @@
         "**/ENV/**": true,
     },
     // CSpell is mainly configured in cspell.json, but the VS Code extension is inconsistent with the CLI.
-    "cSpell.checkOnlyEnabledFileTypes": false
+    "cSpell.checkOnlyEnabledFileTypes": false,
+    "python.testing.pytestArgs": [
+        // Pytest is really stingy with its output by default. It truncates everything.
+        // Not to mention the NOISE of it telling you to use -v or -vv. Yeah, I went there.
+        "-vv"
+    ],
+    "python.testing.unittestEnabled": false
 }

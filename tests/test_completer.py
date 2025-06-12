@@ -17,8 +17,13 @@
 # - Input is "tiam"
 #   - Should suggest Project Stuff/Tiamblia, keeping the input field relative to the destination scope of "/home/io/Sync/" (which will be changeable and persistent)
 
+import os
+from pathlib import Path
+import pyfakefs.fake_filesystem
 import pytest
+import pyfakefs
 from quick_move.completer import get_completions
+from quick_move.helpers import tree
 
 # TODO: Actually test relative paths instead of concatenating a temporary path with the input path.
 # Might need a proper FS mock. Or to abstract the core algorithm away from the filesystem.
@@ -62,21 +67,30 @@ from quick_move.completer import get_completions
     # Relative path stays relative
     ("tiam", ["Project Stuff/Tiamblia"])
 ])
-def test_get_completions(input_path: str, expected: list[str], tmp_path_factory: pytest.TempPathFactory):
+def test_get_completions(input_path: str, expected: list[str], fs: pyfakefs.fake_filesystem.FakeFilesystem):
     # Create a temporary directory structure for testing
-    tmp_path = tmp_path_factory.mktemp("test_completer")
-    (tmp_path / "home").mkdir()
-    (tmp_path / "home" / "io").mkdir()
-    (tmp_path / "home" / "io" / "Sync").mkdir()
-    scope_path = tmp_path / "home" / "io" / "Sync"
-    (scope_path / "Project Stuff").mkdir()
-    (scope_path / "Project Stuff" / "Tiamblia").mkdir()
-    (scope_path / "Project Stuff" / "OtherProject").mkdir()
-    (scope_path / "Misc").mkdir()
-    (scope_path / "Project Stuff" / "Tiamblia" / "file1.txt").write_text("Content of file1")
-    (scope_path / "Project Stuff" / "OtherProject" / "file2.txt").write_text("Content of file2")
-    (scope_path / "Misc" / "file3.txt").write_text("Content of file3")
+    fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
+    fs.create_dir("/home/io/Sync/Misc")  # pyright: ignore[reportUnknownMemberType]
+    fs.create_file("/home/io/Sync/Project Stuff/Tiamblia/file1.txt", contents="Content of file1")  # pyright: ignore[reportUnknownMemberType]
+    fs.create_file("/home/io/Sync/Project Stuff/OtherProject/file2.txt", contents="Content of file2")  # pyright: ignore[reportUnknownMemberType]
+    fs.create_file("/home/io/Sync/Misc/file3.txt", contents="Content of file3")  # pyright: ignore[reportUnknownMemberType]
 
-    completions = get_completions(scope_path.as_posix() + input_path, scope_path.as_posix())
+    print("Created test filesystem with structure:")
+    for line in tree(Path("/")):
+        print(line)
+
+    if os.name == 'nt':
+        def normalize_path(path: str) -> str:
+            # print(f"Normalizing path: {path}, is_absolute: {Path(path).is_absolute()}")
+            # if Path(path).is_absolute():
+            # ugh, Path(path).is_absolute() is False for paths like "/home/io/Sync/" on Windows
+            # because the only thing that makes a path absolute on Windows is a drive letter (or maybe UNC path or whatever, but it doesn't do what I want is the point)
+            if path.startswith("/"):
+                path = f"C:{path}"
+            return path.replace("/", "\\")
+        input_path = normalize_path(input_path)
+        expected = [normalize_path(path) for path in expected]
+
+    completions = get_completions(input_path, "/home/io/Sync/")
     result = [completion.display_text for completion in completions]
     assert result == expected, f"Expected {expected} but got {result} for input '{input_path}'"

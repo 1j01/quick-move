@@ -1,6 +1,8 @@
 """Utility functions."""
 
 import time
+from pathlib import Path
+from typing import Generator
 
 import pyperclip
 
@@ -37,3 +39,27 @@ def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
             merged_ranges[-1] = (merged_ranges[-1][0], max(merged_ranges[-1][1], end))
 
     return merged_ranges
+
+
+# prefix components:
+space =  '    '
+branch = '│   '
+# pointers:
+tee =    '├── '
+last =   '└── '
+
+
+def tree(dir_path: Path, prefix: str='') -> Generator[str, None, None]:
+    """A recursive generator, given a directory Path object
+    will yield a visual tree structure line by line
+    with each line prefixed by the same characters
+    """
+    contents = list(dir_path.iterdir())
+    # contents each get pointers that are ├── with a final └── :
+    pointers = [tee] * (len(contents) - 1) + [last]
+    for pointer, path in zip(pointers, contents):
+        yield prefix + pointer + path.name
+        if path.is_dir(): # extend the prefix and recurse:
+            extension = branch if pointer == tee else space
+            # i.e. space because last, └── , above so no more |
+            yield from tree(path, prefix=prefix+extension)
