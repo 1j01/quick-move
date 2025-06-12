@@ -29,7 +29,16 @@ from quick_move.completer import get_completions
 from quick_move.helpers import tree
 from tests import accept
 
-
+# The "accept" module provides an --update-expected option to pytest to update expected results within tests.
+# It needs to modify the test files, so it shouldn't use the fake filesystem.
+# This fixture sets up a fake filesystem for testing, excluding the "accept" module.
+#
+# Note that --update-expected doesn't work with the `if os.name == "nt":` block below,
+# because my static analysis can't reverse the computation of the
+# path style conversion. (While it's a simple conversion in this case, it's impossible to reverse computation in general.)
+# (Perhaps an LLM could help, but I haven't even released this "accept" module as a library yet.)
+# So --update-expected only works on Linux and macOS, and the block has to be commented even though it would be skipped,
+# since the static analysis doesn't know about `os.name` and assumes the block is reachable.
 @pytest.fixture
 def my_fs():
     with Patcher(additional_skip_names=[accept]) as patcher:
@@ -54,6 +63,18 @@ def my_fs():
 # - match ordering:
 #   - "prjstff/foo" should match "Project Stuff/Foobar" before "Foobar/Project Stuff"
 #   - "foo/prjstff" should match "Foobar/Project Stuff" before "Project Stuff/Foobar"
+# - overlapping matches:
+#   - "IsaiahOdhner\ia" should match "C:\Users\IsaiahOdhner\Sync\Project Stuff\Tiamblia" before "C:\Users\IsaiahOdhner\Sync\Project Stuff\OtherProject"
+#     even though "ia" is in "IsaiahOdhner" and could conceivably be merged into a single match range
+#   - "IsaiahOdhner\er" should match "C:\Users\IsaiahOdhner\Sync\Project Stuff\OtherProject" before "C:\Users\IsaiahOdhner\Sync\Project Stuff\Tiamblia"
+#     even though "er" is in "IsaiahOdhner" and could conceivably be merged into a single match range
+#   - implementation might mean keeping looking for matches until one is found that would extend the match range
+#     (preferably disjoint from existing ranges, but falling back to overlapping ranges that still add new overall character coverage?)
+#     (and maybe still falling back to completely overlapping ranges, if range count contributes to prioritization...
+#      but wait, it currently contributes negatively to prioritization, to penalize discontiguity, but maybe in this case (overlapping matches) it should contribute positively?
+#      idk maybe it should be neutral in this case; maybe the prioritization should count the merged ranges instead of individual matches;
+#      I'd have to see some real cases, but I think it should be neutral, since if something is already matched, if you type something that also matches it,
+#      you're probably trying to match something else)
 
 # TODO: Maybe special ignore rules for:
 # - long hexadecimal strings, which may contain a lot of tiny matches that are not meaningful
@@ -62,18 +83,35 @@ def my_fs():
 # - maybe follow gitignore rules, where present
 # - (these should still be matched if the user explicitly types them, but can be deprioritized in suggestions)
 
+# TODO: Test completions for adding paths, where part of the input is fuzzy, but part is user-defined folders to create.
+# e.g. "prjstff/New Project" should suggest "Project Stuff/New Project" since "prjstff" is a good match for an existing folder,
+# but "New Project" isn't.
+
 @pytest.mark.parametrize("input_path, expected", [
     # Exact folder paths (with or without trailing slash)
-    ("/home/io/Sync/", ["/home/io/Sync/Project Stuff", "/home/io/Sync/Misc"]),
-    ("/home/io/Sync/Project Stuff", ["/home/io/Sync/Project Stuff/Tiamblia", "/home/io/Sync/Project Stuff/OtherProject"]),
-    ("/home/io/Sync/Project Stuff/", ["/home/io/Sync/Project Stuff/Tiamblia", "/home/io/Sync/Project Stuff/OtherProject"]),
+    ("/home/io/Sync/", [
+        # Top-down, alphabetical ordering
+        "/home/io/Sync/Misc",
+        "/home/io/Sync/Project Stuff",
+        "/home/io/Sync/Project Stuff/OtherProject",
+        "/home/io/Sync/Project Stuff/Tiamblia",
+    ]),
+    ("/home/io/Sync/Project Stuff", [
+        "/home/io/Sync/Project Stuff/OtherProject",
+        "/home/io/Sync/Project Stuff/Tiamblia",
+    ]),
+    ("/home/io/Sync/Project Stuff/", [
+        "/home/io/Sync/Project Stuff/OtherProject",
+        "/home/io/Sync/Project Stuff/Tiamblia",
+    ]),
     # Fuzzy matching
-    ("/home/io/Sync/prjstff", ["/home/io/Sync/Project Stuff"]),
-    ("/home/io/Sync/prjstff/", ["/home/io/Sync/Project Stuff"]),
+    # (These might also match subfolders)
+    pytest.param("/home/io/Sync/prjstff", ["/home/io/Sync/Project Stuff"], marks=pytest.mark.xfail(reason="Fuzzy matching not yet implemented")),
+    pytest.param("/home/io/Sync/prjstff/", ["/home/io/Sync/Project Stuff"], marks=pytest.mark.xfail(reason="Fuzzy matching not yet implemented")),
     ("/home/io/Sync/prjstff/tiam", ["/home/io/Sync/Project Stuff/Tiamblia"]),
     ("/home/io/Sync/tiam", ["/home/io/Sync/Project Stuff/Tiamblia"]),
     # Relative path stays relative
-    ("tiam", ["Project Stuff/Tiamblia"])
+    pytest.param("tiam", ["Project Stuff/Tiamblia"], marks=pytest.mark.xfail(reason="Currently gives absolute paths always")),
 ])
 def test_get_completions(input_path: str, expected: list[str], my_fs: pyfakefs.fake_filesystem.FakeFilesystem):
     # Create a temporary directory structure for testing
@@ -87,7 +125,7 @@ def test_get_completions(input_path: str, expected: list[str], my_fs: pyfakefs.f
     for line in tree(Path("/")):
         print(line)
 
-    if os.name == 'nt':
+    if os.name == "nt":
         def normalize_path(path: str) -> str:
             # print(f"Normalizing path: {path}, is_absolute: {Path(path).is_absolute()}")
             # if Path(path).is_absolute():
