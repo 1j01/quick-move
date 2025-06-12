@@ -19,6 +19,7 @@ class SortInfo(NamedTuple):
 class Completion:
     path: Path
     display_text: str
+    unsorted_match_highlights: list[tuple[int, int]]
     match_highlights: list[tuple[int, int]]
     will_create_directory: bool
     ai_suggested: bool
@@ -103,6 +104,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                     Completion(
                         path=Path(suggestion),
                         display_text=suggestion,
+                        unsorted_match_highlights=match_highlights,
                         match_highlights=merge_ranges(match_highlights),
                         will_create_directory=False,
                         ai_suggested=False,
@@ -120,8 +122,8 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
             -sum((end - start) ** 2 for start, end in c.match_highlights),
             # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
             len(c.match_highlights),
-            # prioritize ordered match sets (by counting how many pairs are in order)
-            -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
+            # prioritize ordered match sets (by counting how many pairs are out of order)
+            sum(1 for i in range(len(c.unsorted_match_highlights) - 1) if c.unsorted_match_highlights[i][0] > c.unsorted_match_highlights[i + 1][0]),
             # prioritize matches that are closer to the start of the path
             sum(start for start, _ in c.match_highlights),
             # fallback to alphabetical order
