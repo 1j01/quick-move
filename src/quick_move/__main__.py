@@ -204,10 +204,9 @@ class MainWindow(QMainWindow):
         if item is not None:
             label = self.suggestionsListWidget.itemWidget(item)
             if label is not None:
-                # Use tooltip() instead of text() to avoid HTML in the input field
-                # Could alternatively store a custom property on the label with the full path.
-                # Do we want a tooltip? Maybe, so I've done it this way.
-                new_text = label.toolTip() + os.path.sep
+                # Don't use text() because it will include the HTML from match_highlights
+                # (not to mention we might want it to display a relative path)
+                new_text = str(label.property("suggestion").path) + os.path.sep
                 # Instead of self.destinationEdit.setText, which will erase undo history,
                 # use the QTextCursor API to set the text in an undoable way.
                 # ...textCursor method doesn't seem to exist on QLineEdit...
@@ -277,7 +276,8 @@ class MainWindow(QMainWindow):
             label = QLabel()
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setText(html)
-            label.setToolTip(text)  # Show the full path in the tooltip (ALSO USED FOR READING BACK FOR AUTO-COMPLETE)
+            label.setToolTip(str(suggestion.path))
+            label.setProperty("suggestion", suggestion)
             # label.setStyleSheet("QLabel { padding: 2px; }")  # this doesn't expand the label size, so it doesn't work
             item = QListWidgetItem()
             self.suggestionsListWidget.addItem(item)
