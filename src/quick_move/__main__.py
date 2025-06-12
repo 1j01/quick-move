@@ -276,7 +276,7 @@ class MainWindow(QMainWindow):
             label = QLabel()
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setText(html)
-            label.setToolTip(str(suggestion.path))
+            label.setToolTip(str(suggestion.path) + "\n\nSort info (for debugging):\n" + repr(suggestion.sort_info))
             label.setProperty("suggestion", suggestion)
             # label.setStyleSheet("QLabel { padding: 2px; }")  # this doesn't expand the label size, so it doesn't work
             item = QListWidgetItem()

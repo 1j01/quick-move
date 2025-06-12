@@ -1,10 +1,19 @@
 """Fuzzy file path autocompletion"""
 
 from dataclasses import dataclass
+from typing import NamedTuple, cast
 import os
 from pathlib import Path
 
 from quick_move.helpers import merge_ranges
+
+class SortInfo(NamedTuple):
+    dotfolder: bool
+    length: int
+    num_matches: int
+    ordered_matches: int
+    start_position: int
+    alphabetical: str
 
 @dataclass
 class Completion:
@@ -13,6 +22,7 @@ class Completion:
     match_highlights: list[tuple[int, int]]
     will_create_directory: bool
     ai_suggested: bool
+    sort_info: SortInfo | None = None
 
 # This prevents the program from hanging when searching large directories, e.g. the root directory.
 # Since os.walk uses breadth-first search by default, it still gives good results, as nearby directories are searched first.
@@ -102,19 +112,22 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     # sort completions by relevance, e.g. by length of the match, how many crumbs match (or maybe how many characters would be better), how in order the matches are
     # TODO: prioritize matches that fit word boundaries, e.g. "bar" should match "foo/bar" before "foobar", and "foobar" before "foobarbaz"
     # (and consider lowercase-to-uppercase letter pairs as word boundaries, for camelCase)
-    completions.sort(key=lambda c: (
-        # deprioritize dotfolders
-        any(part.startswith('.') for part in c.path.parts),
-        # prioritize longer matches (total matched characters)
-        -sum((end - start) ** 2 for start, end in c.match_highlights),
-        # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
-        len(c.match_highlights),
-        # prioritize ordered match sets (by counting how many pairs are in order)
-        -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
-        # prioritize matches that are closer to the start of the path
-        sum(start for start, _ in c.match_highlights),
-        # fallback to alphabetical order
-        c.display_text
-    ))
+    for c in completions:
+        c.sort_info=SortInfo(
+            # deprioritize dotfolders
+            any(part.startswith('.') for part in c.path.parts),
+            # prioritize longer matches (total matched characters)
+            -sum((end - start) ** 2 for start, end in c.match_highlights),
+            # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
+            len(c.match_highlights),
+            # prioritize ordered match sets (by counting how many pairs are in order)
+            -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
+            # prioritize matches that are closer to the start of the path
+            sum(start for start, _ in c.match_highlights),
+            # fallback to alphabetical order
+            c.display_text
+        )
+
+    completions.sort(key=lambda c: cast(SortInfo, c.sort_info))
 
     return completions[:MAX_COMPLETIONS]
