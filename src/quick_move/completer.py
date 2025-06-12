@@ -37,6 +37,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     consumed_crumbs: list[str] = []
     for crumb in search_crumbs:
         sub_path = os.path.join(search_from, crumb)
+        # print(f"Checking sub_path: {sub_path}, exists: {os.path.exists(sub_path)}, isdir: {os.path.isdir(sub_path)}")
         if os.path.isdir(sub_path):
             search_from = sub_path
             consumed_crumbs.append(crumb)
@@ -45,6 +46,16 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     # Consume the crumbs that matched exactly
     # (Could do this in the same loop, with a different type of loop, alternatively)
     search_crumbs = search_crumbs[len(consumed_crumbs):]
+    # print(f"Searching from: {search_from} with crumbs: {search_crumbs}")
+
+    consumed_path = search_from
+    if not search.startswith(consumed_path):
+        print(f"Warning: search '{search}' does not start with consumed path '{consumed_path}'. This may lead to unexpected results.")
+        print(f"consumed_path: {consumed_path}")
+        print(f"folder_scope: {folder_scope}")
+        print(f"search_from: {search_from}")
+        print(f"search: {search}")
+
 
     # Walk the directory and find matching names
     # TODO: fuzzier matching, e.g. using difflib.get_close_matches or similar
@@ -64,7 +75,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                 suggestion_lower = suggestion.lower()
                 for crumb in search_crumbs:
                     crumb_lower = crumb.lower()
-                    start = suggestion_lower.find(crumb_lower)
+                    start = suggestion_lower.find(crumb_lower, len(consumed_path))
                     if start != -1:
                         match_highlights.append((start, start + len(crumb)))
 
