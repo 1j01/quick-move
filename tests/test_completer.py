@@ -108,8 +108,18 @@ def my_fs():
     # (These might also match subfolders)
     pytest.param("/home/io/Sync/prjstff", ["/home/io/Sync/Project Stuff"], marks=pytest.mark.xfail(reason="Fuzzy matching not yet implemented")),
     pytest.param("/home/io/Sync/prjstff/", ["/home/io/Sync/Project Stuff"], marks=pytest.mark.xfail(reason="Fuzzy matching not yet implemented")),
-    ("/home/io/Sync/prjstff/tiam", ["/home/io/Sync/Project Stuff/Tiamblia"]),
-    ("/home/io/Sync/tiam", ["/home/io/Sync/Project Stuff/Tiamblia"]),
+    ("/home/io/Sync/prjstff/tiam", [
+        "/home/io/Sync/Project Stuff/Tiamblia",
+        "/home/io/Sync/Project Stuff",
+        "/home/io/Sync/Project Stuff/OtherProject",
+        "/home/io/Sync/Misc",
+    ]),
+    ("/home/io/Sync/tiam", [
+        "/home/io/Sync/Project Stuff/Tiamblia",
+        "/home/io/Sync/Misc",
+        "/home/io/Sync/Project Stuff",
+        "/home/io/Sync/Project Stuff/OtherProject",
+    ]),
     # Relative path stays relative
     pytest.param("tiam", ["Project Stuff/Tiamblia"], marks=pytest.mark.xfail(reason="Currently gives absolute paths always")),
 ])

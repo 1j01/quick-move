@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 
+from quick_move.helpers import merge_ranges
+
 @dataclass
 class Completion:
     path: Path
@@ -58,7 +60,7 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
 
 
     # Walk the directory and find matching names
-    # TODO: fuzzier matching, e.g. using difflib.get_close_matches or similar
+    # TODO: better fuzzier matching, e.g. using difflib.get_close_matches or similar
     completions: list[Completion] = []
     steps = 0
     for root, dirs, _files in os.walk(search_from):
@@ -78,13 +80,20 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
                     start = suggestion_lower.find(crumb_lower, len(consumed_path))
                     if start != -1:
                         match_highlights.append((start, start + len(crumb)))
+                    else:
+                        # Look for smaller matches (individual characters), for fuzzy matching
+                        for i in range(len(crumb_lower)):
+                            start = suggestion_lower.find(crumb_lower[i], len(consumed_path))
+                            if start != -1:
+                                match_highlights.append((start, start + 1))
+                                # break
 
             if match_highlights or not search_crumbs:
                 completions.append(
                     Completion(
                         path=Path(suggestion),
                         display_text=suggestion,
-                        match_highlights=match_highlights,
+                        match_highlights=merge_ranges(match_highlights),
                         will_create_directory=False,
                         ai_suggested=False,
                     )

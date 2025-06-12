@@ -15,7 +15,7 @@ from quick_move import __version__
 from PyQt6.QtWidgets import QMessageBox
 
 from quick_move.completer import get_completions
-from quick_move.helpers import merge_ranges, waitForPaste
+from quick_move.helpers import waitForPaste
 
 # Allow Ctrl+C to exit the application. Qt doesn't handle interrupts by default.
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -266,14 +266,10 @@ class MainWindow(QMainWindow):
         self.suggestionsListWidget.clear()
         self.suggestionsListWidget.clear()
         for suggestion in suggestions:
-            # suggestion.match_highlights is a list of (start, end) tuples
-            # The ranges may be out of order and overlapping, so sort them and merge ranges that overlap or are adjacent,
-            merged_highlights = merge_ranges(suggestion.match_highlights)
-
             text = suggestion.display_text
             html = ""
             last_idx = 0
-            for start, end in merged_highlights:
+            for start, end in suggestion.match_highlights:
                 html += escape(text[last_idx:start])
                 html += f"<span style='background-color: rgba(255, 255, 0, 0.5); font-weight: bold'>{escape(text[start:end])}</span>"
                 last_idx = end
