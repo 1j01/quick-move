@@ -100,6 +100,8 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
         len(c.match_highlights),
         # prioritize ordered match sets (by counting how many pairs are in order)
         -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
+        # prioritize matches that are closer to the start of the path
+        sum(start for start, _ in c.match_highlights),
         # fallback to alphabetical order
         c.display_text
     ))
