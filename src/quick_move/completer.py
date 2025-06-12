@@ -98,6 +98,8 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
         -sum(end - start for start, end in c.match_highlights),
         # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
         len(c.match_highlights),
+        # deprioritize dotfolders
+        any(part.startswith('.') for part in c.path.parts),
         # prioritize ordered match sets (by counting how many pairs are in order)
         -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
         # prioritize matches that are closer to the start of the path
