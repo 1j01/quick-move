@@ -22,6 +22,7 @@ MAX_COMPLETIONS = 100
 def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     """Get file path completions based on the search input and folder scope."""
     # Normalize the search input
+    # Not sure this is a good idea. A space could disambiguate a search for "Foo Bar" compared to "Foo", when you've typed "foo" so far.
     search = search.strip()
 
     # Normalize the folder scope
@@ -31,9 +32,8 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     folder_scope = os.path.normpath(folder_scope)
 
     # Find the deepest existing directory that exactly matches the search path
-    search_crumbs = os.path.split(search)
-    search_crumbs = [crumb for crumb in search_crumbs if crumb]  # Remove empty crumbs which can lead to empty matches
     search_from = folder_scope
+    search_crumbs = Path(search).parts
     consumed_crumbs: list[str] = []
     for crumb in search_crumbs:
         sub_path = os.path.join(search_from, crumb)
