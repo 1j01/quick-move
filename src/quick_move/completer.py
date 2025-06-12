@@ -103,12 +103,12 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     # TODO: prioritize matches that fit word boundaries, e.g. "bar" should match "foo/bar" before "foobar", and "foobar" before "foobarbaz"
     # (and consider lowercase-to-uppercase letter pairs as word boundaries, for camelCase)
     completions.sort(key=lambda c: (
-        # prioritize longer matches (total matched characters)
-        -sum(end - start for start, end in c.match_highlights),
-        # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
-        len(c.match_highlights),
         # deprioritize dotfolders
         any(part.startswith('.') for part in c.path.parts),
+        # prioritize longer matches (total matched characters)
+        -sum((end - start) ** 2 for start, end in c.match_highlights),
+        # prioritize FEWER separate matches, which means larger contiguous matches are prioritized (in conjunction with the previous rule)
+        len(c.match_highlights),
         # prioritize ordered match sets (by counting how many pairs are in order)
         -sum(1 for i in range(len(c.match_highlights) - 1) if c.match_highlights[i][1] <= c.match_highlights[i + 1][0]),
         # prioritize matches that are closer to the start of the path
