@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
 
                         # if self.destinationEdit.selectedText() == self.destinationEdit.text():
                         if self.destinationEdit.selectionLength() == len(self.destinationEdit.text()):
-                            print("Placing cursor at end of destinationEdit.")
+                            # print("Placing cursor at end of destinationEdit.")
                             self.destinationEdit.end(False)
 
                     QTimer.singleShot(0, place_cursor_at_end)  # pyright: ignore[reportUnknownMemberType]
