@@ -23,3 +23,17 @@ def waitForPaste(timeout: float | None = None) -> str:
 
         if timeout is not None and time.time() > startTime + timeout:
             raise pyperclip.PyperclipTimeoutException('waitForPaste() timed out after ' + str(timeout) + ' seconds.')
+
+
+def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    """Merge overlapping or adjacent ranges."""
+
+    merged_ranges: list[tuple[int, int]] = []
+
+    for start, end in sorted(ranges):
+        if not merged_ranges or merged_ranges[-1][1] < start:
+            merged_ranges.append((start, end))
+        else:
+            merged_ranges[-1] = (merged_ranges[-1][0], max(merged_ranges[-1][1], end))
+
+    return merged_ranges
