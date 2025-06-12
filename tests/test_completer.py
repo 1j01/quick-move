@@ -36,9 +36,6 @@ def my_fs():
         yield patcher.fs
 
 
-# TODO: Actually test relative paths instead of concatenating a temporary path with the input path.
-# Might need a proper FS mock. Or to abstract the core algorithm away from the filesystem.
-
 # TODO: Test that crumbs that match exactly are consumed (special handling of prefixes that are real directories).
 # Take this with a grain of salt as I'm probably mixing some things up here, but:
 # - the input path (i.e. "/real/dir/foo" shouldn't match "/foo/real/dir" IF /real/dir exists; otherwise it should match)
