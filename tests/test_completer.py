@@ -19,11 +19,22 @@
 
 import os
 from pathlib import Path
+
+import pyfakefs
 import pyfakefs.fake_filesystem
 import pytest
-import pyfakefs
+from pyfakefs.fake_filesystem_unittest import Patcher
+
 from quick_move.completer import get_completions
 from quick_move.helpers import tree
+from tests import accept
+
+
+@pytest.fixture
+def my_fs():
+    with Patcher(additional_skip_names=[accept]) as patcher:
+        yield patcher.fs
+
 
 # TODO: Actually test relative paths instead of concatenating a temporary path with the input path.
 # Might need a proper FS mock. Or to abstract the core algorithm away from the filesystem.
@@ -67,13 +78,13 @@ from quick_move.helpers import tree
     # Relative path stays relative
     ("tiam", ["Project Stuff/Tiamblia"])
 ])
-def test_get_completions(input_path: str, expected: list[str], fs: pyfakefs.fake_filesystem.FakeFilesystem):
+def test_get_completions(input_path: str, expected: list[str], my_fs: pyfakefs.fake_filesystem.FakeFilesystem):
     # Create a temporary directory structure for testing
-    fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
-    fs.create_dir("/home/io/Sync/Misc")  # pyright: ignore[reportUnknownMemberType]
-    fs.create_file("/home/io/Sync/Project Stuff/Tiamblia/file1.txt", contents="Content of file1")  # pyright: ignore[reportUnknownMemberType]
-    fs.create_file("/home/io/Sync/Project Stuff/OtherProject/file2.txt", contents="Content of file2")  # pyright: ignore[reportUnknownMemberType]
-    fs.create_file("/home/io/Sync/Misc/file3.txt", contents="Content of file3")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/Misc")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_file("/home/io/Sync/Project Stuff/Tiamblia/file1.txt", contents="Content of file1")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_file("/home/io/Sync/Project Stuff/OtherProject/file2.txt", contents="Content of file2")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_file("/home/io/Sync/Misc/file3.txt", contents="Content of file3")  # pyright: ignore[reportUnknownMemberType]
 
     print("Created test filesystem with structure:")
     for line in tree(Path("/")):
