@@ -315,6 +315,7 @@ class MainWindow(QMainWindow):
         # but this may actually be MULTIPLE directories; or you may want to REDO the move.
         # You may even want to REDO the move without undoing it first, re-applying it with new files (recreated from some process).
         # And in any case, some of the files or folders may have been moved or deleted externally,
+        # or failed to move (either existing in the destination, which could lead to confusion when trying to undo, or due to other errors),
         # so there's a lot of situations to consider.
 
         dialog.exec()
