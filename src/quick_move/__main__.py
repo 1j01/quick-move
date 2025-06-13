@@ -8,10 +8,10 @@ from typing import cast
 import shutil
 
 from PyQt6 import uic
-from PyQt6.QtCore import QEvent, QSettings, QTimer, QUrl, Qt
+from PyQt6.QtCore import QEvent, QSettings, QTimer, QUrl, Qt, QStringListModel
 from PyQt6.QtGui import QAction, QDesktopServices, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMenu,
-                             QPushButton, QVBoxLayout)
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu,
+                             QPushButton)
 
 from quick_move import __version__
 from PyQt6.QtWidgets import QMessageBox
@@ -20,8 +20,8 @@ from quick_move.completer import get_completions
 from quick_move.desktop_automation import get_selected_files
 
 UI_FILE = os.path.join(os.path.dirname(__file__), "main_window.ui")
-
 ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
+RECENT_MOVE_UI_FILE = os.path.join(os.path.dirname(__file__), "recent_move_dialog.ui")
 
 MAX_HISTORY = 100
 
@@ -288,25 +288,8 @@ class MainWindow(QMainWindow):
         action = cast(QAction, self.sender())
         move = cast(dict[str, str|list[str]], action.data())
 
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Recent Move")
-
-        layout = QVBoxLayout(dialog)
-
-        # TODO: ensure this list is fully readable, with a scrollbar if necessary
-        # probably should define this window in a .ui file
-        label = QLabel(f"Moved file{'' if len(move['files']) == 1 else 's'}: {', '.join([os.path.basename(file) for file in move['files']])}\nDestination: {move['destination']}", dialog)
-        label.setTextFormat(Qt.TextFormat.PlainText)
-        layout.addWidget(label)
-
-        undo_button = QPushButton("Undo Move", dialog)
-        undo_button.clicked.connect(lambda: self.undoMove(move))  # pyright: ignore[reportUnknownMemberType]
-        layout.addWidget(undo_button)
-
-        open_button = QPushButton("Open Destination", dialog)
-        # TODO: can we type check this better? values have different types depending on the key... TypedDict?
-        open_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(cast(str, move['destination']))))  # pyright: ignore[reportUnknownMemberType]
-        layout.addWidget(open_button)
+        # TODO: ensure destination label is fully readable, with scrollbar if necessary
+        # TODO: maybe use text box instead of list view for moved files, for copy-paste-ability.
 
         # TODO: maybe close dialog after undoing the move or opening the destination?
         # or gray out the move button, maybe both, after undoing the move?
@@ -318,6 +301,13 @@ class MainWindow(QMainWindow):
         # or failed to move (either existing in the destination, which could lead to confusion when trying to undo, or due to other errors),
         # so there's a lot of situations to consider.
 
+        dialog: QDialog = uic.loadUi(RECENT_MOVE_UI_FILE)  # type: ignore
+        dialog.setWindowTitle("Recent Move")
+        dialog.movedFilesListView.setModel(QStringListModel(move['files']))  # type: ignore
+        dialog.destinationLabel.setText(f"Destination: {move['destination']}")  # type: ignore
+        dialog.movedFilesListView.setEditTriggers(QListView.EditTrigger.NoEditTriggers)  # type: ignore
+        dialog.undoMoveButton.clicked.connect(lambda: self.undoMove(move))  # type: ignore
+        dialog.openDestinationButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(cast(str, move['destination']))))  # type: ignore
         dialog.exec()
 
     def undoMove(self, move: dict[str, str|list[str]]):
