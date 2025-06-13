@@ -15,3 +15,7 @@ Could also suggest folders based on shared file types, e.g. for a selection of "
 Could also suggest folders based on shared prefixes or parts of the file names, e.g. for a selection of "Tiamblia 23409234.png" and "Tiamblia 23409235.png", suggest a "Tiamblia" folder. Sometimes this ought to be pluralized, e.g. for "Screenshot 23409234.png" and "Screenshot 23409235.png", suggest a "Screenshots" folder.
 
 Of course AI could cover these use cases, but it wouldn't be as reliable, and it would be slower.
+
+Could look at fuzzy matching implementations in other software, like VS Code, as well as libraries like `fuzzywuzzy` or `rapidfuzz`.
+
+Could maybe use `QtGui.QClipboard` instead of `pyperclip`. Aside from removing a dependency, it would allow targeting specific MIME types, like text/url-list which may be set by some file managers.
