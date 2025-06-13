@@ -19,32 +19,18 @@ from PyQt6.QtWidgets import QMessageBox
 from quick_move.completer import get_completions
 from quick_move.desktop_automation import get_selected_files
 
-# Allow Ctrl+C to exit the application. Qt doesn't handle interrupts by default.
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-
 UI_FILE = os.path.join(os.path.dirname(__file__), "main_window.ui")
 
 ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
 
 MAX_HISTORY = 100
 
-# I want to move files to ~/Sync (syncthing default folder), mainly, for now.
-# TODO: persistent destination scope config that you can change easily, perhaps with the Home key (using the same destination input field)
-destination_scope = os.path.expanduser('~/Sync/')
-if not os.path.exists(destination_scope):
-    destination_scope = os.path.expanduser('~/')
-# Normalize to native path separators (/ on Linux, \ on Windows)
-destination_scope = os.path.abspath(destination_scope) + os.path.sep
-
-# Get payload from command line arguments
-payload = sys.argv[1:] if len(sys.argv) > 1 else []
-# Get selection with desktop automation
-if payload and payload[0] == '--from-clipboard':
-    payload = get_selected_files()
-
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, payload: list[str], destination_scope: str):
         super().__init__()
+
+        self.payload = payload
+        self.destination_scope = destination_scope
 
         # Load the .ui file
         # TODO: try compiling the .ui file to a .py file; it might help with type checking
@@ -222,12 +208,12 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Warning", f"The destination '{destination}' is not a directory.")
             return
 
-        self.record_move(payload, destination)
+        self.record_move(self.payload, destination)
 
         # TODO: Can we do this atomically?
         # Or make this more flexible, like prompt to undo, retry, skip, or (if applicable) overwrite
         # (Would be easier if we could reuse a file manager / OS dialog for this, either with an API or desktop automation.)
-        for file in payload:
+        for file in self.payload:
             try:
                 shutil.move(file, destination)
             except Exception as e:
@@ -237,7 +223,7 @@ class MainWindow(QMainWindow):
 
     def update_suggestions(self):
         """Update the suggestions list based on the destination directory input."""
-        suggestions = get_completions(self.destinationEdit.text(), destination_scope)
+        suggestions = get_completions(self.destinationEdit.text(), self.destination_scope)
         # TODO: icons/styling for directories to be created, AI suggestions
         self.suggestionsListWidget.clear()
         self.suggestionsListWidget.clear()
@@ -367,8 +353,27 @@ class MainWindow(QMainWindow):
 
 def main():
     """Run the application. This is defined in `setup.cfg` as the entry point for the `quick-move` command."""
+
+    # Allow Ctrl+C to exit the application. Qt doesn't handle interrupts by default.
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     app = QApplication(sys.argv)
-    window = MainWindow()
+
+    # I want to move files to ~/Sync (syncthing default folder), mainly, for now.
+    # TODO: persistent destination scope config that you can change easily, perhaps with the Home key (using the same destination input field)
+    destination_scope = os.path.expanduser('~/Sync/')
+    if not os.path.exists(destination_scope):
+        destination_scope = os.path.expanduser('~/')
+    # Normalize to native path separators (/ on Linux, \ on Windows)
+    destination_scope = os.path.abspath(destination_scope) + os.path.sep
+
+    # Get payload from command line arguments
+    payload = sys.argv[1:] if len(sys.argv) > 1 else []
+    # Get selection with desktop automation
+    if payload and payload[0] == '--from-clipboard':
+        payload = get_selected_files()
+
+    window = MainWindow(payload, destination_scope)
     window.show()
     sys.exit(app.exec())
 
