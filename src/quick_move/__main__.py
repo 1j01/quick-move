@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         self.historyActions: list[QAction] = []
         # self.separatorAct = self.menuHistory.addSeparator()
         # TODO: placeholder disabled item (empty menu is confusing)
-        for i in range(MAX_HISTORY):
+        for _i in range(MAX_HISTORY):
             act = QAction(self)
             act.setVisible(False)
             act.triggered.connect(self.historyItemClicked)  # pyright: ignore[reportUnknownMemberType]
