@@ -1,6 +1,8 @@
 import os
 import sys
 
+from PyQt6.QtWidgets import QMessageBox
+
 from quick_move.helpers import waitForPaste
 
 def get_selected_files() -> list[str]:
@@ -8,6 +10,7 @@ def get_selected_files() -> list[str]:
     Get the currently selected files in the file manager.
 
     Note that this function currently may exit the process.
+    Also it assumes QApplication is running, in order to show an error message box.
     TODO: improve this error handling.
     """
     import pyperclip
@@ -34,9 +37,9 @@ def get_selected_files() -> list[str]:
     except pyperclip.PyperclipTimeoutException as e:
         # Show a message box and exit
         pyperclip.copy(original_clipboard)
-        print(f"Error: {e}\n\nThe program may not have permission to send keyboard events to Windows Explorer.")
-        # TODO: for a message box, we need the QApplication to be running.
-        # QMessageBox.critical(None, "Error", str(e) + "\n\nThe program may not have permission to send keyboard events to Windows Explorer.")
+        message = f"Error: {e}\n\nThe program may not have permission to send keyboard events to Windows Explorer."
+        print(message)
+        QMessageBox.critical(None, "Quick Move", message)
         sys.exit(1)
 
     pyperclip.copy(original_clipboard)
