@@ -4,12 +4,14 @@ from html import escape
 import os.path
 import signal
 import sys
+from typing import cast
+import shutil
 
 from PyQt6 import uic
-from PyQt6.QtCore import QEvent, QTimer, Qt
-from PyQt6.QtGui import QAction, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
-                             QPushButton)
+from PyQt6.QtCore import QEvent, QSettings, QTimer, QUrl, Qt
+from PyQt6.QtGui import QAction, QDesktopServices, QKeyEvent
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMenu,
+                             QPushButton, QVBoxLayout)
 
 from quick_move import __version__
 from PyQt6.QtWidgets import QMessageBox
@@ -23,6 +25,8 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 UI_FILE = os.path.join(os.path.dirname(__file__), "main_window.ui")
 
 ABOUT_UI_FILE = os.path.join(os.path.dirname(__file__), "about_window.ui")
+
+MAX_HISTORY = 100
 
 # I want to move files to ~/Sync (syncthing default folder), mainly, for now.
 # TODO: persistent destination scope config that you can change easily, perhaps with the Home key (using the same destination input field)
@@ -97,6 +101,7 @@ class MainWindow(QMainWindow):
         self.destinationEdit: QLineEdit
         self.suggestionsListWidget: QListWidget
         self.moveButton: QPushButton
+        self.menuHistory: QMenu
 
         self.actionQuit: QAction
         self.actionAbout_Quick_Move: QAction
@@ -110,6 +115,18 @@ class MainWindow(QMainWindow):
         self.actionQuit.triggered.connect(self.close)  # pyright: ignore[reportUnknownMemberType]
         self.actionAbout_Quick_Move.triggered.connect(self.show_about)  # pyright: ignore[reportUnknownMemberType]
         self.actionAbout_Qt.triggered.connect(QApplication.aboutQt)  # pyright: ignore[reportUnknownMemberType]
+        # Create recent move actions
+        self.historyActions: list[QAction] = []
+        # self.separatorAct = self.menuHistory.addSeparator()
+        # TODO: placeholder disabled item (empty menu is confusing)
+        for i in range(MAX_HISTORY):
+            act = QAction(self)
+            act.setVisible(False)
+            act.triggered.connect(self.historyItemClicked)  # pyright: ignore[reportUnknownMemberType]
+            self.historyActions.append(act)
+        # Add recent move actions to the menu
+        self.menuHistory.addActions(self.historyActions)  # pyright: ignore[reportUnknownMemberType]
+        self.updateHistoryActions()
 
         # Populate info about selected files
         self.payloadLabel.setTextFormat(Qt.TextFormat.PlainText)
@@ -230,7 +247,6 @@ class MainWindow(QMainWindow):
 
     def move_files(self):
         """Move selected files to the target directory, and exit if successful."""
-        import shutil
         destination = self.destinationEdit.text().strip()
         if not destination:
             # There's a potential UX issue if you want to move files to the root of the configured destination scope.
@@ -249,7 +265,12 @@ class MainWindow(QMainWindow):
         if not os.path.isdir(destination):
             QMessageBox.warning(self, "Warning", f"The destination '{destination}' is not a directory.")
             return
+
+        self.record_move(payload, destination)
+
         # TODO: Can we do this atomically?
+        # Or make this more flexible, like prompt to undo, retry, skip, or (if applicable) overwrite
+        # (Would be easier if we could reuse a file manager / OS dialog for this, either with an API or desktop automation.)
         for file in payload:
             try:
                 shutil.move(file, destination)
@@ -283,6 +304,104 @@ class MainWindow(QMainWindow):
             self.suggestionsListWidget.addItem(item)
             self.suggestionsListWidget.setItemWidget(item, label)
         self.suggestionsListWidget.setCurrentRow(0)
+
+    def record_move(self, files: list[str], destination: str):
+        """Record the move operation for the History menu."""
+        settings = QSettings('Isaiah Odhner', 'Quick Move')
+        moves = settings.value('recentMoves', [])
+
+        moves.insert(0, {
+            'files': files,
+            'destination': destination,
+        })
+        del moves[MAX_HISTORY:]
+
+        settings.setValue('recentMoves', moves)
+
+        for widget in QApplication.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                widget.updateHistoryActions()
+
+    def updateHistoryActions(self):
+        settings = QSettings('Isaiah Odhner', 'Quick Move')
+        moves = settings.value('recentMoves', [])
+
+        numRecentMoves = min(len(moves), MAX_HISTORY)
+
+        for i in range(numRecentMoves):
+            text = moves[i]['destination']
+            if i < 9:
+                text = f"&{i + 1} {text}"
+            self.historyActions[i].setText(text)
+            self.historyActions[i].setData(moves[i])
+            self.historyActions[i].setVisible(True)
+
+        for j in range(numRecentMoves, MAX_HISTORY):
+            self.historyActions[j].setVisible(False)
+
+        # self.separatorAct.setVisible((numRecentMoves > 0))
+
+    def historyItemClicked(self):
+        """Show a dialog with options to undo the move or open the destination directory."""
+        action = cast(QAction, self.sender())
+        move = cast(dict[str, str|list[str]], action.data())
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Recent Move")
+
+        layout = QVBoxLayout(dialog)
+
+        # TODO: ensure this list is fully readable, with a scrollbar if necessary
+        # probably should define this window in a .ui file
+        label = QLabel(f"Moved file{'' if len(move['files']) == 1 else 's'}: {', '.join([os.path.basename(file) for file in move['files']])}\nDestination: {move['destination']}", dialog)
+        label.setTextFormat(Qt.TextFormat.PlainText)
+        layout.addWidget(label)
+
+        undo_button = QPushButton("Undo Move", dialog)
+        undo_button.clicked.connect(lambda: self.undoMove(move))  # pyright: ignore[reportUnknownMemberType]
+        layout.addWidget(undo_button)
+
+        open_button = QPushButton("Open Destination", dialog)
+        # TODO: can we type check this better? values have different types depending on the key... TypedDict?
+        open_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(cast(str, move['destination']))))  # pyright: ignore[reportUnknownMemberType]
+        layout.addWidget(open_button)
+
+        # TODO: maybe close dialog after undoing the move or opening the destination?
+        # or gray out the move button, maybe both, after undoing the move?
+        # I don't know, there's a lot of design possibilities here.
+        # If you undo the move, you might want to open the SOURCE directory to see the files,
+        # but this may actually be MULTIPLE directories; or you may want to REDO the move.
+        # You may even want to REDO the move without undoing it first, re-applying it with new files (recreated from some process).
+        # And in any case, some of the files or folders may have been moved or deleted externally,
+        # so there's a lot of situations to consider.
+
+        dialog.exec()
+
+    def undoMove(self, move: dict[str, str|list[str]]):
+        """Undo a move operation by moving the files back to their original locations."""
+        # TODO: Can we do this atomically?
+        # Or make this more flexible, like prompt to undo, retry, skip, or (if applicable) overwrite
+        # (Would be easier if we could reuse a file manager / OS dialog for this, either with an API or desktop automation.)
+        # TODO: can we type check this better? values have different types depending on the key... TypedDict?
+        files = cast(list[str], move['files'])
+        destination = cast(str, move['destination'])
+        for original_path in files:
+            path_in_destination = os.path.join(destination, os.path.basename(original_path))
+            try:
+                shutil.move(path_in_destination, original_path)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to move file '{path_in_destination}' back to '{original_path}': {e}")
+
+        # Remove the move from the history
+        # Not sure this is a good idea, might be better to mark it as undone instead.
+        settings = QSettings('Isaiah Odhner', 'Quick Move')
+        moves = settings.value('recentMoves', [])
+        moves = [m for m in moves if m != move]
+        settings.setValue('recentMoves', moves)
+
+        for widget in QApplication.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                widget.updateHistoryActions()
 
     def show_about(self):
         """Show the about dialog."""
