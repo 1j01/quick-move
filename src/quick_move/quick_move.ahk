@@ -1,6 +1,12 @@
 #Requires AutoHotkey v2.0
 
-#HotIf WinActive("ahk_class CabinetWClass") or WinActive("ahk_class ExploreWClass")
+GroupAdd("ExplorerDesktopGroup", "ahk_class ExploreWClass")
+GroupAdd("ExplorerDesktopGroup", "ahk_class CabinetWClass")
+GroupAdd("ExplorerDesktopGroup", "ahk_class Progman")
+GroupAdd("ExplorerDesktopGroup", "ahk_class WorkerW")
+GroupAdd("ExplorerDesktopGroup", "ahk_class #32770")  ; Dialogs, including Save As and Open, but might be too general
+
+#HotIf WinActive('ahk_group ExplorerDesktopGroup')
 
 ^+x::  ; Ctrl+Shift+X
 {
