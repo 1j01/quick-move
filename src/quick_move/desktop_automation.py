@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QMessageBox
 
 from quick_move.helpers import waitForPaste
 
+
 def get_selected_files() -> list[str]:
     """
     Get the currently selected files in the file manager.
@@ -20,6 +21,7 @@ def get_selected_files() -> list[str]:
 
     if os.name == 'nt':
         import keyboard
+
         # keyboard.send('ctrl+x')
         keyboard.send('ctrl+shift+c')  # Copy As Path in Windows Explorer
     else:

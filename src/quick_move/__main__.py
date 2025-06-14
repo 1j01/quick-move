@@ -1,21 +1,20 @@
 """Main module for the Quick Move application."""
 
-from html import escape
 import os.path
+import shutil
 import signal
 import sys
+from html import escape
 from typing import cast
-import shutil
 
 from PyQt6 import uic
-from PyQt6.QtCore import QEvent, QSettings, QTimer, QUrl, Qt, QStringListModel
+from PyQt6.QtCore import QEvent, QSettings, Qt, QTimer, QUrl
 from PyQt6.QtGui import QAction, QDesktopServices, QKeyEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu,
-                             QPushButton)
+from PyQt6.QtWidgets import (QApplication, QDialog, QLabel, QLineEdit,
+                             QListWidget, QListWidgetItem, QMainWindow, QMenu,
+                             QMessageBox, QPushButton)
 
 from quick_move import __version__
-from PyQt6.QtWidgets import QMessageBox
-
 from quick_move.completer import get_completions
 from quick_move.desktop_automation import get_selected_files
 
