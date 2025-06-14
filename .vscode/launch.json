@@ -17,6 +17,9 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/.venv/bin/pytest",
+            "windows": {
+                "program": "${workspaceFolder}/.venv/Scripts/pytest.exe",
+            },
             // "args": ["-k", "some_test_function"],
             "console": "integratedTerminal",
             "justMyCode": false,
