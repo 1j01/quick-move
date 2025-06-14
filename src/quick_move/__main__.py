@@ -290,8 +290,8 @@ class MainWindow(QMainWindow):
 
         # TODO: ensure destination label is fully readable, with scrollbar if necessary
 
-        # TODO: maybe close dialog after undoing the move or opening the destination?
-        # or gray out the move button, maybe both, after undoing the move?
+        # Should it close the dialog after undoing the move or opening the destination?
+        # or gray out the move button (now implemented), maybe both buttons, after undoing the move?
         # I don't know, there's a lot of design possibilities here.
         # If you undo the move, you might want to open the SOURCE directory to see the files,
         # but this may actually be MULTIPLE directories; or you may want to REDO the move.
@@ -299,12 +299,20 @@ class MainWindow(QMainWindow):
         # And in any case, some of the files or folders may have been moved or deleted externally,
         # or failed to move (either existing in the destination, which could lead to confusion when trying to undo, or due to other errors),
         # so there's a lot of situations to consider.
+        # We should probably include more information in the history, like which files moved successfully or failed,
+        # and what directories were created if any, in order to free up the design, and make it easier to present a fuller picture.
+        # I'm also considering a sort of two pane layout with source and destination,
+        # with "<- Undo" and "Redo ->" buttons, and "Open Source Directories" and "Open Destination Directory" buttons,
+        # with two text areas showing which files are currently in either folder (usually one or the other, but both in the case of partial failure)
 
         dialog: QDialog = uic.loadUi(RECENT_MOVE_UI_FILE)  # type: ignore
         dialog.setWindowTitle("Recent Move")
         dialog.movedFilesTextBrowser.setText("\n".join(move['files']))  # type: ignore
         dialog.destinationLabel.setText(f"Destination: {move['destination']}")  # type: ignore
-        dialog.undoMoveButton.clicked.connect(lambda: self.undoMove(move))  # type: ignore
+        def undo_and_disable():
+            self.undoMove(move)
+            dialog.undoMoveButton.setDisabled(True)  # type: ignore
+        dialog.undoMoveButton.clicked.connect(undo_and_disable)  # type: ignore
         dialog.openDestinationButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(cast(str, move['destination']))))  # type: ignore
         dialog.exec()
 
