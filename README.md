@@ -32,7 +32,10 @@ Known issues:
 - If you want to move files to the root of the configured destination scope, right now I guess it'll say "Please specify a destination directory."
   I haven't needed to do this yet, and haven't tried it.
 - (If you press the shortcut in Thunar with nothing selected, it will consider the current directory as the selected item. This is not a bug, but it may be unexpected. There doesn't seem to be a way in Thunar to disable the custom action if nothing is selected, while still allowing it on folders.)
-- **Experimental**: `quick-move --from-clipboard` may go haywire and spam Ctrl+Z instead of pressing Ctrl+X once; this may just be a bad interaction between xdotool and Synergy, though.
+- **Experimental**: `quick-move --from-clipboard`
+  - Linux: may go haywire and spam Ctrl+Z instead of pressing Ctrl+X once; this may just be a bad interaction between xdotool and Synergy, though.
+  - Windows: When launched via `quick_move.ahk`, it forces the window to be on top, but dialogs don't go on top of the main window, so you can't access them, and you can't close the main window until they're closed, even though you can't see them. (You can use Escape, though.)
+  - The error message when no files are selected is not very user-friendly.
 
 ## License
 
