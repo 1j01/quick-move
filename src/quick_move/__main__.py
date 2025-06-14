@@ -66,9 +66,15 @@ class MainWindow(QMainWindow):
             act.setVisible(False)
             act.triggered.connect(self.historyItemClicked)  # pyright: ignore[reportUnknownMemberType]
             self.historyActions.append(act)
+
         # Add recent move actions to the menu
         self.menuHistory.addActions(self.historyActions)  # pyright: ignore[reportUnknownMemberType]
         self.updateHistoryActions()
+        # Add Clear History action
+        clear_history_action = QAction("Clear History", self)
+        clear_history_action.triggered.connect(self.clearHistory)  # pyright: ignore[reportUnknownMemberType]
+        self.menuHistory.addSeparator()
+        self.menuHistory.addAction(clear_history_action)  # pyright: ignore[reportUnknownMemberType]
 
         # Populate info about selected files
         self.payloadLabel.setTextFormat(Qt.TextFormat.PlainText)
@@ -341,6 +347,15 @@ class MainWindow(QMainWindow):
         for widget in QApplication.topLevelWidgets():
             if isinstance(widget, MainWindow):
                 widget.updateHistoryActions()
+
+    def clearHistory(self):
+        """Clear the history of recent moves."""
+        # In the future this might mention how this history can be used for improving suggestions, as well as undoing moves.
+        if QMessageBox.question(self, "Clear History", "Are you sure you want to clear the history of recent moves?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
+            return
+        settings = QSettings('Isaiah Odhner', 'Quick Move')
+        settings.setValue('recentMoves', [])
+        self.updateHistoryActions()
 
     def show_about(self):
         """Show the about dialog."""

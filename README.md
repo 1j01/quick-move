@@ -21,7 +21,7 @@ The fastest workflow for reorganizing thousands of files.
   - [x] Undo recent moves from a list
   - [x] Open the destination folder of a move
   - [ ] Default destination input to the last used folder (or include it as a suggestion)
-  - [ ] Option to clear the history
+  - [x] Option to clear the history
 
 ## Bugs and Issues
 
