@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Run Python App",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/quick_move/__main__.py",
             "console": "integratedTerminal",
@@ -14,7 +14,7 @@
         },
         {
             "name": "Debug Tests",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/.venv/bin/pytest",
             // "args": ["-k", "some_test_function"],
