@@ -29,16 +29,6 @@
     <set>QDialogButtonBox::Cancel</set>
    </property>
   </widget>
-  <widget class="QListView" name="movedFilesListView">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>50</y>
-     <width>341</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QPushButton" name="undoMoveButton">
    <property name="geometry">
     <rect>
@@ -89,6 +79,16 @@
    </property>
    <property name="text">
     <string>Destination: (some destination)</string>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="movedFilesTextBrowser">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>50</y>
+     <width>341</width>
+     <height>101</height>
+    </rect>
    </property>
   </widget>
  </widget>

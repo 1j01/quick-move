@@ -289,7 +289,6 @@ class MainWindow(QMainWindow):
         move = cast(dict[str, str|list[str]], action.data())
 
         # TODO: ensure destination label is fully readable, with scrollbar if necessary
-        # TODO: maybe use text box instead of list view for moved files, for copy-paste-ability.
 
         # TODO: maybe close dialog after undoing the move or opening the destination?
         # or gray out the move button, maybe both, after undoing the move?
@@ -303,9 +302,8 @@ class MainWindow(QMainWindow):
 
         dialog: QDialog = uic.loadUi(RECENT_MOVE_UI_FILE)  # type: ignore
         dialog.setWindowTitle("Recent Move")
-        dialog.movedFilesListView.setModel(QStringListModel(move['files']))  # type: ignore
+        dialog.movedFilesTextBrowser.setText("\n".join(move['files']))  # type: ignore
         dialog.destinationLabel.setText(f"Destination: {move['destination']}")  # type: ignore
-        dialog.movedFilesListView.setEditTriggers(QListView.EditTrigger.NoEditTriggers)  # type: ignore
         dialog.undoMoveButton.clicked.connect(lambda: self.undoMove(move))  # type: ignore
         dialog.openDestinationButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(cast(str, move['destination']))))  # type: ignore
         dialog.exec()
