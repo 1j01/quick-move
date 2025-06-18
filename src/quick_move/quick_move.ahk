@@ -1,5 +1,7 @@
 #Requires AutoHotkey v2.0
 
+TraySetIcon A_ScriptDir "\folder-with-arrow.ico"
+
 GroupAdd("ExplorerDesktopGroup", "ahk_class ExploreWClass")
 GroupAdd("ExplorerDesktopGroup", "ahk_class CabinetWClass")
 GroupAdd("ExplorerDesktopGroup", "ahk_class Progman")
