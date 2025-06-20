@@ -19,3 +19,10 @@ Of course AI could cover these use cases, but it wouldn't be as reliable, and it
 Could look at fuzzy matching implementations in other software, like VS Code, as well as libraries like `fuzzywuzzy` or `rapidfuzz`.
 
 Could maybe use `QtGui.QClipboard` instead of `pyperclip`. Aside from removing a dependency, it would allow targeting specific MIME types, like text/url-list which may be set by some file managers.
+
+Could get the selected files directly from Windows Explorer using DLL calls, either in AHK like [this implementation](http://github.com/denolfe/AutoHotkey/blob/d7fa8b42c477c186a323f8d3d98276239bff0295/lib/Explorer.ahk), or in Python using `ctypes` or `pywin32`. This would completely avoid messing with the clipboard and make it more robust. (I haven't looked for a Python implementation yet, but someone's probably done it. Regardless, an LLM can probably translate the code.)
+
+Could also use Windows' native move action for handling conflicts and errors, either in AHK like [this implementation](https://github.com/denolfe/AutoHotkey/blob/d7fa8b42c477c186a323f8d3d98276239bff0295/lib/ShellFileOperation.ahk), or in Python using `ctypes` or `pywin32`.
+
+Could support automatically moving selected files to a new folder when a folder is created with Ctrl+Shift+N in Windows Explorer by listening for Ctrl+Shift+N, recording the selected files, waiting for Enter, recording the selected folder, and (after checking that it's really a single empty folder) moving the files to that folder.  
+Of course the Ctrl+Shift+X workflow should be mostly as efficient, typing a folder name to create through the Quick Move dialog, but I feel like this is just how Ctrl+Shift+N should work, so it would be nice to (optionally) make it so.
