@@ -36,6 +36,21 @@ def my_fs():
     with Patcher(additional_skip_names=[accept]) as patcher:
         yield patcher.fs
 
+@pytest.fixture
+def my_fs_1(my_fs: FakeFilesystem):
+    my_fs.os = OSType.LINUX
+    my_fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/Misc")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_file("/home/io/Sync/Project Stuff/Tiamblia/file1.txt", contents="Content of file1")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_file("/home/io/Sync/Project Stuff/OtherProject/file2.txt", contents="Content of file2")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_file("/home/io/Sync/Misc/file3.txt", contents="Content of file3")  # pyright: ignore[reportUnknownMemberType]
+
+    print("Created test filesystem with structure:")
+    for line in tree(Path("/")):
+        print(line)
+
+    yield my_fs
+
 
 # TODO: Test that crumbs that match exactly are consumed (special handling of prefixes that are real directories).
 # Take this with a grain of salt as I'm probably mixing some things up here, but:
@@ -79,55 +94,59 @@ def my_fs():
 # e.g. "prjstff/New Project" should suggest "Project Stuff/New Project" since "prjstff" is a good match for an existing folder,
 # but "New Project" isn't.
 
-@pytest.mark.parametrize("input_path, expected", [
+def test_exact_path_prefix_1(my_fs_1: FakeFilesystem):
     # Exact folder paths (with or without trailing slash)
-    ("/home/io/Sync/", [
+    expect_completions(my_fs_1, "/home/io/Sync/", [
         # Top-down, alphabetical ordering
         "/home/io/Sync/Misc",
         "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Project Stuff/Tiamblia",
-    ]),
-    ("/home/io/Sync/Project Stuff", [
+    ])
+
+def test_exact_path_prefix_2(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "/home/io/Sync/Project Stuff", [
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Project Stuff/Tiamblia",
-    ]),
-    ("/home/io/Sync/Project Stuff/", [
+    ])
+
+def test_exact_path_prefix_3(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "/home/io/Sync/Project Stuff/", [
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Project Stuff/Tiamblia",
-    ]),
-    # Fuzzy matching
-    # (These might also match subfolders)
-    pytest.param("/home/io/Sync/prjstff", ["/home/io/Sync/Project Stuff"], marks=pytest.mark.xfail(reason="Fuzzy matching not yet implemented")),
-    pytest.param("/home/io/Sync/prjstff/", ["/home/io/Sync/Project Stuff"], marks=pytest.mark.xfail(reason="Fuzzy matching not yet implemented")),
-    ("/home/io/Sync/prjstff/tiam", [
+    ])
+
+# Fuzzy matching
+# (These might also match subfolders)
+@pytest.mark.xfail(reason="Fuzzy matching not yet implemented")
+def test_fuzzy_matching_1(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "/home/io/Sync/prjstff", ["/home/io/Sync/Project Stuff"])
+
+@pytest.mark.xfail(reason="Fuzzy matching not yet implemented")
+def test_fuzzy_matching_2(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "/home/io/Sync/prjstff/", ["/home/io/Sync/Project Stuff"])
+
+def test_fuzzy_matching_3(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "/home/io/Sync/prjstff/tiam", [
         "/home/io/Sync/Project Stuff/Tiamblia",
         "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Misc",
-    ]),
-    ("/home/io/Sync/tiam", [
+    ])
+
+def test_fuzzy_matching_4(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "/home/io/Sync/tiam", [
         "/home/io/Sync/Project Stuff/Tiamblia",
         "/home/io/Sync/Misc",
         "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
-    ]),
-    # Relative path stays relative
-    pytest.param("tiam", ["Project Stuff/Tiamblia"], marks=pytest.mark.xfail(reason="Currently gives absolute paths always")),
-])
-def test_get_completions(input_path: str, expected: list[str], my_fs: FakeFilesystem):
-    my_fs.os = OSType.LINUX
-    # Create a temporary directory structure for testing
-    my_fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
-    my_fs.create_dir("/home/io/Sync/Misc")  # pyright: ignore[reportUnknownMemberType]
-    my_fs.create_file("/home/io/Sync/Project Stuff/Tiamblia/file1.txt", contents="Content of file1")  # pyright: ignore[reportUnknownMemberType]
-    my_fs.create_file("/home/io/Sync/Project Stuff/OtherProject/file2.txt", contents="Content of file2")  # pyright: ignore[reportUnknownMemberType]
-    my_fs.create_file("/home/io/Sync/Misc/file3.txt", contents="Content of file3")  # pyright: ignore[reportUnknownMemberType]
+    ])
 
-    print("Created test filesystem with structure:")
-    for line in tree(Path("/")):
-        print(line)
+@pytest.mark.xfail(reason="Currently gives absolute paths always")
+def test_relative_path_stays_relative(my_fs_1: FakeFilesystem):
+    expect_completions(my_fs_1, "tiam", ["Project Stuff/Tiamblia"])
 
+def expect_completions(my_fs: FakeFilesystem, input_path: str, expected: list[str]):
     completions = get_completions(input_path, "/home/io/Sync/")
     result = [completion.display_text for completion in completions]
     assert result == expected, f"Expected {expected} but got {result} for input '{input_path}'"
