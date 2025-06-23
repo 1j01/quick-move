@@ -51,6 +51,27 @@ def my_fs_1(my_fs: FakeFilesystem):
 
     yield my_fs
 
+@pytest.fixture
+def my_fs_2(my_fs: FakeFilesystem):
+    my_fs.os = OSType.LINUX
+    my_fs.create_dir("/home/io/Sync")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/esses/s")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/esses/ss")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/esses/sss")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/esses/ssss")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/alphabet/a")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/alphabet/ab")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/alphabet/abc")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/alphabet/abcd")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/alphabet/abcde")  # pyright: ignore[reportUnknownMemberType]
+    my_fs.create_dir("/home/io/Sync/alphabet/abcdef")  # pyright: ignore[reportUnknownMemberType]
+
+    print("Created test filesystem with structure:")
+    for line in tree(Path("/")):
+        print(line)
+
+    yield my_fs
+
 
 # TODO: Test that crumbs that match exactly are consumed (special handling of prefixes that are real directories).
 # Take this with a grain of salt as I'm probably mixing some things up here, but:
@@ -140,6 +161,28 @@ def test_fuzzy_matching_4(my_fs_1: FakeFilesystem):
         "/home/io/Sync/Misc",
         "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
+    ])
+
+def test_many_matches_is_worse_than_near_exact_length(my_fs_2: FakeFilesystem):
+    """despite more character matches, a longer string is a more distant match"""
+    expect_completions(my_fs_2, "/home/io/Sync/esses/s", [
+        "/home/io/Sync/esses/s",
+        "/home/io/Sync/esses/ss",
+        "/home/io/Sync/esses/sss",
+        "/home/io/Sync/esses/ssss",
+    ])
+
+def test_deprioritizing_extraneous_characters(my_fs_2: FakeFilesystem):
+    """extraneous characters in the search string make a match worse"""
+    # TODO: make sure this doesn't test just length / number of matches
+    # by including non-matching characters (in both?)
+    expect_completions(my_fs_2, "/home/io/Sync/alphabet/abcd", [
+        "/home/io/Sync/alphabet/abcd",
+        "/home/io/Sync/alphabet/abcde",
+        "/home/io/Sync/alphabet/abcdef",
+        "/home/io/Sync/alphabet/abc",
+        "/home/io/Sync/alphabet/ab",
+        "/home/io/Sync/alphabet/a",
     ])
 
 @pytest.mark.xfail(reason="Currently gives absolute paths always")
