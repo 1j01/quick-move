@@ -46,10 +46,14 @@ def get_completions(search: str, folder_scope: str = "/") -> list[Completion]:
     folder_scope = os.path.normpath(folder_scope)
 
     # Find the deepest existing directory that exactly matches the search path
+    # excluding the last part, which may be still being typed,
+    # unless the search ends with a slash,
+    # in which case the contents of that directory should be displayed.
     search_from = folder_scope
     search_crumbs = Path(search).parts
     consumed_crumbs: list[str] = []
-    for crumb in search_crumbs:
+    ends_with_slash = search.endswith("/") and search.endswith("\\")
+    for crumb in search_crumbs[:-1] if not ends_with_slash else search_crumbs:
         sub_path = os.path.join(search_from, crumb)
         # print(f"Checking sub_path: {sub_path}, exists: {os.path.exists(sub_path)}, isdir: {os.path.isdir(sub_path)}")
         if os.path.isdir(sub_path):

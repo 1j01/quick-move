@@ -115,35 +115,37 @@ def my_fs_2(my_fs: FakeFilesystem):
 # e.g. "prjstff/New Project" should suggest "Project Stuff/New Project" since "prjstff" is a good match for an existing folder,
 # but "New Project" isn't.
 
-def test_exact_path_prefix_1(my_fs_1: FakeFilesystem):
-    # Exact folder paths (with or without trailing slash)
+def test_exact_path_prefix_of_default_dir(my_fs_1: FakeFilesystem):
     expect_completions(my_fs_1, "/home/io/Sync/", [
         # Top-down, alphabetical ordering
+        "/home/io/Sync",
         "/home/io/Sync/Misc",
         "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Project Stuff/Tiamblia",
     ])
 
-def test_exact_path_prefix_2(my_fs_1: FakeFilesystem):
+def test_exact_path_prefix_subdir_without_slash(my_fs_1: FakeFilesystem):
     expect_completions(my_fs_1, "/home/io/Sync/Project Stuff", [
+        "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Project Stuff/Tiamblia",
+        "/home/io/Sync/Misc",
     ])
 
-def test_exact_path_prefix_3(my_fs_1: FakeFilesystem):
+def test_exact_path_prefix_subdir_with_slash(my_fs_1: FakeFilesystem):
     expect_completions(my_fs_1, "/home/io/Sync/Project Stuff/", [
+        "/home/io/Sync/Project Stuff",
         "/home/io/Sync/Project Stuff/OtherProject",
         "/home/io/Sync/Project Stuff/Tiamblia",
+        "/home/io/Sync/Misc",
     ])
 
 # Fuzzy matching
 # (These might also match subfolders)
-@pytest.mark.xfail(reason="Fuzzy matching not yet implemented")
 def test_fuzzy_matching_1(my_fs_1: FakeFilesystem):
     expect_completions(my_fs_1, "/home/io/Sync/prjstff", ["/home/io/Sync/Project Stuff"])
 
-@pytest.mark.xfail(reason="Fuzzy matching not yet implemented")
 def test_fuzzy_matching_2(my_fs_1: FakeFilesystem):
     expect_completions(my_fs_1, "/home/io/Sync/prjstff/", ["/home/io/Sync/Project Stuff"])
 
