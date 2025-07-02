@@ -376,13 +376,21 @@ def main():
     if not os.path.exists(destination_scope):
         destination_scope = os.path.expanduser('~/')
     # Normalize to native path separators (/ on Linux, \ on Windows)
-    destination_scope = os.path.abspath(destination_scope) + os.path.sep
+    # and handle DOS-style short filenames and symbolic links.
+    # (not sure if resolving symlinks is necessary / a good idea)
+    destination_scope = os.path.realpath(destination_scope) + os.path.sep
 
     # Get payload from command line arguments
     payload = sys.argv[1:] if len(sys.argv) > 1 else []
     # Get selection with desktop automation
     if payload and payload[0] == '--from-clipboard':
         payload = get_selected_files()
+
+    # Handle DOS-style short filenames and symbolic links.
+    # (Not sure if resolving symlinks is necessary / a good idea,
+    # but handling DOS-style short filenames is important for long paths
+    # on Windows, and realpath() does both.)
+    payload = [os.path.realpath(p) for p in payload]
 
     window = MainWindow(payload, destination_scope)
     window.show()
